@@ -172,7 +172,7 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
+            <Capability>1</Capability>
             <DriverSelection>-1</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
@@ -434,7 +434,17 @@
             <File>
               <FileName>system_TM4C123.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:\Keil\UV5\ARM\Startup\TI\TM4C123\system_TM4C123.c</FilePath>
+              <FilePath>C:\Keil_v5\ARM\Startup\TI\TM4C123\system_TM4C123.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Libraries</GroupName>
+          <Files>
+            <File>
+              <FileName>driverlib.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\rvmdk\driverlib.lib</FilePath>
             </File>
           </Files>
         </Group>
