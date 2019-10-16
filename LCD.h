@@ -499,7 +499,6 @@ void LCD_write_char(char character)
 			data(0xFF);
 			data(0xFF);
 			data(0x00);
-			break;
 		}
 	}
 	

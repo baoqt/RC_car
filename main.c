@@ -15,6 +15,7 @@
 
 #include "utils/uartstdio.h"
 #include "LCD.h"
+#include "BLE.h"
 
 int main()
 {
