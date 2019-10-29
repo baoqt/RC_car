@@ -2,6 +2,7 @@
 ".\objects\startup_tm4c123.o"
 ".\objects\main.o"
 ".\objects\system_tm4c123.o"
+".\objects\uartstdio.o"
 "C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\rvmdk\driverlib.lib"
 --ro-base 0x00000000 --entry 0x00000000 --rw-base 0x20000000 --entry Reset_Handler --first __Vectors --strict --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

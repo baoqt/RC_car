@@ -11,6 +11,7 @@
 .\objects\main.o: C:\ti\TivaWare_C_Series-2.1.4.178\driverlib/gpio.h
 .\objects\main.o: C:\ti\TivaWare_C_Series-2.1.4.178\driverlib/sysctl.h
 .\objects\main.o: C:\ti\TivaWare_C_Series-2.1.4.178\driverlib/uart.h
+.\objects\main.o: C:\ti\TivaWare_C_Series-2.1.4.178\driverlib/i2c.h
 .\objects\main.o: C:\ti\TivaWare_C_Series-2.1.4.178\utils/uartstdio.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\main.o: LCD.h

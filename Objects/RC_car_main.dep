@@ -1,24 +1,25 @@
 Dependencies for Project 'RC_car', Target 'main': (DO NOT MODIFY !)
-F (.\startup_TM4C123.s)(0x5D9D4D70)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123--pd "__UVISION_VERSION SETA 528"--list .\listings\startup_tm4c123.lst --xref -o .\objects\startup_tm4c123.o --depend .\objects\startup_tm4c123.d)
-F (.\main.c)(0x5DA631CF)(--c99 --gnu -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I C:\ti\TivaWare_C_Series-2.1.4.178-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123-D__UVISION_VERSION="528" -DTM4C123GH6PM-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\startup_TM4C123.s)(0x5DB8CED0)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123--pd "__UVISION_VERSION SETA 528"--list .\listings\startup_tm4c123.lst --xref -o .\objects\startup_tm4c123.o --depend .\objects\startup_tm4c123.d)
+F (.\main.c)(0x5DB8CF7A)(--c99 --gnu -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I C:\ti\TivaWare_C_Series-2.1.4.178-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123-D__UVISION_VERSION="528" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DTM4C123GH6PM-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEC4CD2)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEC4CCE)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEC4CD2)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\tm4c123gh6pm.h)(0x5D8C0FCA)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_memmap.h)(0x5D8C0FC9)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_types.h)(0x5D8C0FC9)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\debug.h)(0x5D8C0F7A)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\fpu.h)(0x5D8C0F7A)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\pin_map.h)(0x5D8C0F7A)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\gpio.h)(0x5D8C0F7A)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\sysctl.h)(0x5D8C0F7A)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\uart.h)(0x5D8C0F7A)
-I (C:\ti\TivaWare_C_Series-2.1.4.178\utils\uartstdio.h)(0x5D8C0FE8)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\tm4c123gh6pm.h)(0x5D8B0A20)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_memmap.h)(0x5D8B0A1F)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_types.h)(0x5D8B0A1F)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\debug.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\fpu.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\pin_map.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\gpio.h)(0x5D8BBE5E)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\sysctl.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\uart.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\i2c.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\utils\uartstdio.h)(0x5D8BBF80)
 I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEC4CD4)
-I (LCD.h)(0x5DA61827)
+I (LCD.h)(0x5DB8CED0)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEC4CD2)
-I (BLE.h)(0x5DA631BE)
-F (C:\Keil_v5\ARM\Startup\TI\TM4C123\system_TM4C123.c)(0x559DB39C)(--c99 --gnu -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I C:\ti\TivaWare_C_Series-2.1.4.178-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123-D__UVISION_VERSION="528" -DTM4C123GH6PM-o .\objects\system_tm4c123.o --omf_browse .\objects\system_tm4c123.crf --depend .\objects\system_tm4c123.d)
+I (BLE.h)(0x5DB8CEF2)
+F (C:\Keil_v5\ARM\Startup\TI\TM4C123\system_TM4C123.c)(0x559DB39C)(--c99 --gnu -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I C:\ti\TivaWare_C_Series-2.1.4.178-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123-D__UVISION_VERSION="528" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DTM4C123GH6PM-o .\objects\system_tm4c123.o --omf_browse .\objects\system_tm4c123.crf --depend .\objects\system_tm4c123.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEC4CD2)
 I (C:\Keil_v5\ARM\INC\TI\TM4C123\TM4C123.h)(0x559DB4B0)
 I (C:\Keil_v5\ARM\INC\TI\TM4C123\TM4C123GH6PM.h)(0x559DB4B0)
@@ -27,4 +28,19 @@ I (C:\Keil_v5\ARM\CMSIS\Include\core_cmInstr.h)(0x559DBE8A)
 I (C:\Keil_v5\ARM\CMSIS\Include\core_cmFunc.h)(0x559DBE8A)
 I (C:\Keil_v5\ARM\CMSIS\Include\core_cm4_simd.h)(0x559DBE8A)
 I (C:\Keil_v5\ARM\INC\TI\TM4C123\system_TM4C123.h)(0x559DB4B0)
-F (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\rvmdk\driverlib.lib)(0x5D8C0F7A)()
+F (C:\ti\TivaWare_C_Series-2.1.4.178\utils\uartstdio.c)(0x5D8B0A30)(--c99 --gnu -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I C:\ti\TivaWare_C_Series-2.1.4.178-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\TI\TM4C123-D__UVISION_VERSION="528" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DTM4C123GH6PM-o .\objects\uartstdio.o --omf_browse .\objects\uartstdio.crf --depend .\objects\uartstdio.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x5CEC4CCE)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEC4CD2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x5CEC4CD4)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_ints.h)(0x5D8B0A1F)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_memmap.h)(0x5D8B0A1F)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_types.h)(0x5D8B0A1F)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\inc\hw_uart.h)(0x5D8B0A1F)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\debug.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\interrupt.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\rom.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\rom_map.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\sysctl.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\uart.h)(0x5D8B09F5)
+I (C:\ti\TivaWare_C_Series-2.1.4.178\utils\uartstdio.h)(0x5D8BBF80)
+F (C:\ti\TivaWare_C_Series-2.1.4.178\driverlib\rvmdk\driverlib.lib)(0x5D8B09F5)()

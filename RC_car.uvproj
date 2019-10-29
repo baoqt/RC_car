@@ -375,7 +375,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define></Define>
+              <Define>rvmdk PART_TM4C123GH6PM TARGET_IS_TM4C123_RB1</Define>
               <Undefine></Undefine>
               <IncludePath>C:\ti\TivaWare_C_Series-2.1.4.178</IncludePath>
             </VariousControls>
@@ -435,6 +435,11 @@
               <FileName>system_TM4C123.c</FileName>
               <FileType>1</FileType>
               <FilePath>C:\Keil_v5\ARM\Startup\TI\TM4C123\system_TM4C123.c</FilePath>
+            </File>
+            <File>
+              <FileName>uartstdio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:\ti\TivaWare_C_Series-2.1.4.178\utils\uartstdio.c</FilePath>
             </File>
           </Files>
         </Group>
