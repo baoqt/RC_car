@@ -17,17 +17,7 @@
 #include "utils/uartstdio.h"
 #include "LCD.h"
 #include "BLE.h"
-
-#define PTCL					0x0000052C
-
-#define PIN0          	0x00000001
-#define PIN1          	0x00000002
-#define PIN2          	0x00000004
-#define PIN3          	0x00000008
-#define PIN4          	0x00000010
-#define PIN5          	0x00000020
-#define PIN6          	0x00000040
-#define PIN7          	0x00000080
+#include "VL53L0X.h"
 
 #define VL53L0X_ADDRESS	0x00000052
 
@@ -39,8 +29,8 @@
 
 void ConfigureUART(void)
 {
-	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOA;								// Enable GPIOA module.
 	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0;								// Enable UART0 module.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOA;						// Enable GPIOA module.
 
   GPIOPinConfigure(GPIO_PA0_U0RX);										// Configure GPIO pins for UART mode.
   GPIOPinConfigure(GPIO_PA1_U0TX);
@@ -53,18 +43,66 @@ void ConfigureUART(void)
 
 void ConfigureI2C(void)
 {
-	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOB;								// Enable GPIOB module.
+	volatile signed long delay;
+	
 	SYSCTL_RCGCI2C_R |= SYSCTL_RCGCI2C_R0;							// Enable I2C0 module.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOB;						// Enable GPIOB module.
+	delay = SYSCTL_RCGC2_R;
 	
-	GPIOPinConfigure(GPIO_PB2_I2C0SCL);									// Configure GPIO pins for I2C mode.
-	GPIOPinConfigure(GPIO_PB3_I2C0SDA);
-	GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_2 | GPIO_PIN_3);
+	GPIO_PORTB_LOCK_R |= 0x4C4F434B;										// Unlock PORTB
+	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
 	
-	I2CMasterInitExpClk(VL53L0X_ADDRESS, 50000000, false);
+	GPIO_PORTB_AMSEL_R = 0x00;													// Disable analog
+	GPIO_PORTB_AFSEL_R = 0x0C;													// Enable alternate function for PORTB2 and PORTB3
+	GPIO_PORTB_ODR_R |= 0x08;														// Enable open drain for PORTB3 - I2C0SDA
+	GPIO_PORTB_DEN_R |= 0x0C;														// Enable digital I/O on PORTB2 and PORTB3
+	GPIO_PORTB_PCTL_R =0x00003300;											// Configure PMC for PORTB2 and PORTB3
+	
+	I2C0_MCR_R = 0x00;																	// Initiailize I2C0 master
+	
+	
+	
+//	
+//	GPIOPinConfigure(GPIO_PB2_I2C0SCL);									// Configure GPIO pins for I2C mode.
+//	GPIOPinConfigure(GPIO_PB3_I2C0SDA);
+//	GPIOPinTypeI2CSCL(GPIO_PORTB_BASE, GPIO_PIN_2);
+//	GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_3);
+//	
+//	I2CLoopbackEnable(I2C0_BASE);												// For debugging, enable loopback mode
+//	
+//	I2CMasterInitExpClk(VL53L0X_ADDRESS, SysCtlClockGet(), false);
+//	
+//	I2CSlaveEnable(I2C0_BASE);													// Debug
+//	I2CSlaveInit(I2C0_BASE, VL53L0X_ADDRESS);						// Debug
+//	
+//	I2CMasterSlaveAddrSet(I2C0_BASE, VL53L0X_ADDRESS, false);
+}
+
+void ConfigurePORTF()
+{
+	volatile unsigned long delay;
+	
+	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF;								// Activate clock for PORTF
+	delay = SYSCTL_RCGC2_R;															// Dummy read to allow clock to activate
+	
+	GPIO_PORTF_LOCK_R = 0x4C4F434B;											// Unlock PORTF
+	GPIO_PORTF_CR_R = 0xFF;															// Allow changes to PORTF
+	
+	GPIO_PORTF_AMSEL_R = 0x00;													// Disable analog
+	GPIO_PORTF_PCTL_R  = 0x00000000;										// PTCL GPIO on PORTF
+	GPIO_PORTF_DIR_R |= 0x0E;														// Set PORTF1-PORTF3 as outputs (RGB LEDs)
+	GPIO_PORTF_DIR_R &= ~0x11;													// SET PORTF0 & PORTF4 as inputs (SW1 and SW2)
+	GPIO_PORTF_AFSEL_R = 0x00;													// Disable alternate function on PORTF
+	GPIO_PORTF_PUR_R |= 0x11;														// Enable PUR on PORTF0 and PORTF4
+	GPIO_PORTF_DEN_R |= 0xFF;														// Enable digital I/O on PORTF
+	GPIO_PORTF_DATA_R &= ~0x0E;													// Turn off LEDs
 }
 
 int main()
 {
+	uint32_t pui32DataTx[3];
+	uint32_t pui32DataRx[3];
+	uint32_t ui32Index;
 	//
   // Enable lazy stacking for interrupt handlers.  This allows floating-point
   // instructions to be used within interrupt handlers, but at the expense of
@@ -77,5 +115,36 @@ int main()
   //
   SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_XTAL_16MHZ | SYSCTL_OSC_MAIN);
 	
-	return 0;
+	//
+	// Start module startup configuration
+	//
+	ConfigureUART();
+	UARTprintf("----------\nUART configured\n");
+	ConfigureI2C();
+	UARTprintf("I2C configured\n");
+	ConfigurePORTF();
+	UARTprintf("Tiva LEDs configured\n");
+	LCD_init();
+	UARTprintf("LCD initialized\n");
+	
+	UARTprintf("----------\n\n");
+	
+	//
+	// Turn off on board RGB LED.
+	//
+	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+	
+	pui32DataTx[0] = 'I';
+	pui32DataTx[1] = '2';
+	pui32DataTx[2] = 'C';
+	
+	for (ui32Index = 0; ui32Index < 3; ui32Index++)			// Initialize Rx buffer
+	{
+		pui32DataRx[ui32Index] = 0;
+	}
+	
+	while (1)
+	{
+		
+	}
 }
