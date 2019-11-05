@@ -58,24 +58,9 @@ void ConfigureI2C(void)
 	GPIO_PORTB_DEN_R |= 0x0C;														// Enable digital I/O on PORTB2 and PORTB3
 	GPIO_PORTB_PCTL_R =0x00003300;											// Configure PMC for PORTB2 and PORTB3
 	
-	I2C0_MCR_R = 0x00;																	// Initiailize I2C0 master
-	
-	
-	
-//	
-//	GPIOPinConfigure(GPIO_PB2_I2C0SCL);									// Configure GPIO pins for I2C mode.
-//	GPIOPinConfigure(GPIO_PB3_I2C0SDA);
-//	GPIOPinTypeI2CSCL(GPIO_PORTB_BASE, GPIO_PIN_2);
-//	GPIOPinTypeI2C(GPIO_PORTB_BASE, GPIO_PIN_3);
-//	
-//	I2CLoopbackEnable(I2C0_BASE);												// For debugging, enable loopback mode
-//	
-//	I2CMasterInitExpClk(VL53L0X_ADDRESS, SysCtlClockGet(), false);
-//	
-//	I2CSlaveEnable(I2C0_BASE);													// Debug
-//	I2CSlaveInit(I2C0_BASE, VL53L0X_ADDRESS);						// Debug
-//	
-//	I2CMasterSlaveAddrSet(I2C0_BASE, VL53L0X_ADDRESS, false);
+	I2C0_MCR_R = I2C_MCR_MFE;														// Initiailize I2C0 in master mode
+	I2C0_MTPR_R = 0x00000009;														// SCL clock speed set to 100Kbps
+	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address
 }
 
 void ConfigurePORTF()
@@ -100,9 +85,6 @@ void ConfigurePORTF()
 
 int main()
 {
-	uint32_t pui32DataTx[3];
-	uint32_t pui32DataRx[3];
-	uint32_t ui32Index;
 	//
   // Enable lazy stacking for interrupt handlers.  This allows floating-point
   // instructions to be used within interrupt handlers, but at the expense of
@@ -134,13 +116,18 @@ int main()
 	//
 	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 	
-	pui32DataTx[0] = 'I';
-	pui32DataTx[1] = '2';
-	pui32DataTx[2] = 'C';
+	I2C0_MDR_R = 0xAA;
+	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
 	
-	for (ui32Index = 0; ui32Index < 3; ui32Index++)			// Initialize Rx buffer
+	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+	
+	if (!(I2C0_MCS_R & I2C_MCS_ERROR))
 	{
-		pui32DataRx[ui32Index] = 0;
+		UARTprintf("Slave ACK received\n");
+	}
+	else
+	{
+		UARTprintf("Error receiving slave ACK\n");
 	}
 	
 	while (1)
