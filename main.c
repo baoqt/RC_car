@@ -53,10 +53,10 @@ void ConfigureI2C(void)
 	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
 	
 	GPIO_PORTB_AMSEL_R = 0x00;													// Disable analog
-	GPIO_PORTB_AFSEL_R = 0x0C;													// Enable alternate function for PORTB2 and PORTB3
-	GPIO_PORTB_ODR_R |= 0x08;														// Enable open drain for PORTB3 - I2C0SDA
-	GPIO_PORTB_DEN_R |= 0x0C;														// Enable digital I/O on PORTB2 and PORTB3
-	GPIO_PORTB_PCTL_R =0x00003300;											// Configure PMC for PORTB2 and PORTB3
+	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
+	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
+	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
+	GPIO_PORTB_PCTL_R = 0x00003300;											// Configure PMC for PORTB2 and PORTB3
 	
 	I2C0_MCR_R = I2C_MCR_MFE;														// Initiailize I2C0 in master mode
 	I2C0_MTPR_R = 0x00000009;														// SCL clock speed set to 100Kbps
@@ -111,15 +111,18 @@ int main()
 	
 	UARTprintf("----------\n\n");
 	
-	//
-	// Turn off on board RGB LED.
-	//
-	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+//	I2CMasterDataPut(I2C0_BASE, 0xAA);
+//	I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_SEND);
 	
 	I2C0_MDR_R = 0xAA;
-	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+	I2C0_MCS_R &= ~I2C_MCS_HS & ~I2C_MCS_ACK;
+	I2C0_MCS_R |= I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
 	
-	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+	while (I2C0_MCS_R & I2C_MCS_BUSBSY)														// Fix this maybe
+	{
+		//I2C0_MCS_R |= I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+		//I2C0_MCS_R &= ~I2C_MCS_HS & ~I2C_MCS_ACK;
+	}
 	
 	if (!(I2C0_MCS_R & I2C_MCS_ERROR))
 	{
