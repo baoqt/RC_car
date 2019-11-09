@@ -46,7 +46,7 @@ void ConfigureI2C(void)
 	volatile signed long delay;
 	
 	SYSCTL_RCGCI2C_R |= SYSCTL_RCGCI2C_R0;							// Enable I2C0 module.
-	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOB;						// Enable GPIOB module.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;						// Enable GPIOB module.
 	delay = SYSCTL_RCGC2_R;
 	
 	GPIO_PORTB_LOCK_R |= 0x4C4F434B;										// Unlock PORTB
@@ -54,13 +54,12 @@ void ConfigureI2C(void)
 	
 	GPIO_PORTB_AMSEL_R = 0x00;													// Disable analog
 	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
-	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
+	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
 	GPIO_PORTB_PCTL_R = 0x00003300;											// Configure PMC for PORTB2 and PORTB3
 	
 	I2C0_MCR_R = I2C_MCR_MFE;														// Initiailize I2C0 in master mode
 	I2C0_MTPR_R = 0x00000009;														// SCL clock speed set to 100Kbps
-	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address
 }
 
 void ConfigurePORTF()
@@ -113,15 +112,12 @@ int main()
 	
 //	I2CMasterDataPut(I2C0_BASE, 0xAA);
 //	I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_SEND);
+	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode
+	I2C0_MDR_R = 0xAA;																	// Set data and start transmission
+	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
 	
-	I2C0_MDR_R = 0xAA;
-	I2C0_MCS_R &= ~I2C_MCS_HS & ~I2C_MCS_ACK;
-	I2C0_MCS_R |= I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
-	
-	while (I2C0_MCS_R & I2C_MCS_BUSBSY)														// Fix this maybe
+	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
 	{
-		//I2C0_MCS_R |= I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
-		//I2C0_MCS_R &= ~I2C_MCS_HS & ~I2C_MCS_ACK;
 	}
 	
 	if (!(I2C0_MCS_R & I2C_MCS_ERROR))
