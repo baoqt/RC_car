@@ -54,6 +54,7 @@ void ConfigureI2C(void)
 	
 	GPIO_PORTB_AMSEL_R = 0x00;													// Disable analog
 	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
+	GPIO_PORTB_PUR_R |= GPIO_PIN_2 | GPIO_PIN_3;
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
 	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
 	GPIO_PORTB_PCTL_R = 0x00003300;											// Configure PMC for PORTB2 and PORTB3
@@ -110,24 +111,56 @@ int main()
 	
 	UARTprintf("----------\n\n");
 	
-//	I2CMasterDataPut(I2C0_BASE, 0xAA);
-//	I2CMasterControl(I2C0_BASE, I2C_MASTER_CMD_SINGLE_SEND);
-	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode
-	I2C0_MDR_R = 0xAA;																	// Set data and start transmission
+	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode in write mode
+	I2C0_MDR_R = 0x0C0;																	// Set data and start transmission
 	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
 	
 	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
 	{
 	}
 	
-	if (!(I2C0_MCS_R & I2C_MCS_ERROR))
+	if (!(I2C0_MCS_R & I2C_MCS_DATACK))
 	{
-		UARTprintf("Slave ACK received\n");
+		UARTprintf("Slave data ACK received\n");
 	}
 	else
 	{
-		UARTprintf("Error receiving slave ACK\n");
+		UARTprintf("Error receiving slave data ACK\n");
 	}
+	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+	{
+		UARTprintf("Slave address ACK received\n");
+	}
+	else
+	{
+		UARTprintf("Error receiving slave address ACK\n");
+	}
+	
+	I2C0_MSA_R = VL53L0X_ADDRESS + 1;										// Set slave address in transmit mode in read mode
+	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+	
+	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
+	{
+	}
+	
+	if (!(I2C0_MCS_R & I2C_MCS_DATACK))
+	{
+		UARTprintf("Slave data ACK received\n");
+	}
+	else
+	{
+		UARTprintf("Error receiving slave data ACK\n");
+	}
+	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+	{
+		UARTprintf("Slave address ACK received\n");
+	}
+	else
+	{
+		UARTprintf("Error receiving slave address ACK\n");
+	}
+	
+	UARTprintf("Received: %d\n", I2C0_MDR_R); 
 	
 	while (1)
 	{
