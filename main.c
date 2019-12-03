@@ -39,6 +39,15 @@ void ConfigureUART(void)
   UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);		// Use the internal 16MHz oscillator as the UART clock source.
 
   UARTStdioConfig(0, 115200, 16000000);								// Initialize the UART for console I/O.
+	
+	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1;								// Set up UART1 module, same as above.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOB;
+	
+	GPIOPinConfigure(GPIO_PB0_U1RX);
+	GPIOPinConfigure(GPIO_PB1_U1TX);
+	GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+	
+	UARTClockSourceSet(UART1_BASE, UART_CLOCK_PIOSC);
 }
 
 void ConfigureI2C(void)
@@ -116,19 +125,22 @@ int main()
 	//
 	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 	
-	I2C0_MDR_R = 0xAA;
-	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
-	
-	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
-	
-	if (!(I2C0_MCS_R & I2C_MCS_ERROR))
-	{
-		UARTprintf("Slave ACK received\n");
-	}
-	else
-	{
-		UARTprintf("Error receiving slave ACK\n");
-	}
+	UARTStdioConfig(1, 115200, 16000000);
+	UARTprintf("Hello World!");
+//	
+//	I2C0_MDR_R = 0xAA;
+//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+//	
+//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+//	
+//	if (!(I2C0_MCS_R & I2C_MCS_ERROR))
+//	{
+//		UARTprintf("Slave ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave ACK\n");
+//	}
 	
 	while (1)
 	{
