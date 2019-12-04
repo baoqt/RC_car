@@ -30,7 +30,7 @@
 void ConfigureUART(void)
 {
 	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0;								// Enable UART0 module.
-	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOA;						// Enable GPIOA module.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R0;						// Enable GPIOA module.
 
   GPIOPinConfigure(GPIO_PA0_U0RX);										// Configure GPIO pins for UART mode.
   GPIOPinConfigure(GPIO_PA1_U0TX);
@@ -40,14 +40,26 @@ void ConfigureUART(void)
 
   UARTStdioConfig(0, 115200, 16000000);								// Initialize the UART for console I/O.
 	
-	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1;								// Set up UART1 module, same as above.
-	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOB;
+	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1;								// Set up UART1 module.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+	UART1_CTL_R &= ~UART_CTL_UARTEN;										// Disable UART1 for configuration.
 	
-	GPIOPinConfigure(GPIO_PB0_U1RX);
-	GPIOPinConfigure(GPIO_PB1_U1TX);
-	GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+	GPIO_PORTB_LOCK_R = 0x4C4F434B;											// Unlock PORTB.
+	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
+	GPIO_PORTB_AFSEL_R |= GPIO_PIN_0 | GPIO_PIN_1;			// Set PORTB0 and PORTB1 to alternate function.
+	GPIO_PORTB_DR2R_R |= GPIO_PIN_0 | GPIO_PIN_1;				// Set drive strengh to 2mA
 	
-	UARTClockSourceSet(UART1_BASE, UART_CLOCK_PIOSC);
+	UART1_IBRD_R = 8;																		// Set baud rate to 115200 with 16MHz clock
+	UART1_FBRD_R = 54;
+	UART1_LCRH_R = 0x00000060;													// Set data length to 8 bits, enable FIFO.
+	UART1_CC_R = 0x00000005;														// Set clock source to PIOSC.
+	UART1_CTL_R |= UART_CTL_UARTEN;											// Enable UART1.
+	
+//	GPIOPinConfigure(GPIO_PB0_U1RX);
+//	GPIOPinConfigure(GPIO_PB1_U1TX);
+//	GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+//	
+//	UARTClockSourceSet(UART1_BASE, UART_CLOCK_PIOSC);
 }
 
 void ConfigureI2C(void)
@@ -117,6 +129,8 @@ int main()
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
 	UARTprintf("LCD initialized\n");
+	BLE_init();
+	UARTprintf("BLE initialized\n");
 	
 	UARTprintf("----------\n\n");
 	
@@ -124,9 +138,9 @@ int main()
 	// Turn off on board RGB LED.
 	//
 	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
-	
-	UARTStdioConfig(1, 115200, 16000000);
-	UARTprintf("Hello World!");
+	UART1_DR_R = 0xAA;
+	//UARTStdioConfig(1, 115200, 16000000);
+	//UARTprintf("Hello World!");
 //	
 //	I2C0_MDR_R = 0xAA;
 //	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
