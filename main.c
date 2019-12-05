@@ -27,7 +27,7 @@
 //}
 //#endif
 
-void ConfigureUART(void)
+void ConfigureUART0(void)
 {
 	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0;								// Enable UART0 module.
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R0;						// Enable GPIOA module.
@@ -39,26 +39,6 @@ void ConfigureUART(void)
   UARTClockSourceSet(UART0_BASE, UART_CLOCK_PIOSC);		// Use the internal 16MHz oscillator as the UART clock source.
 
   UARTStdioConfig(0, 115200, 16000000);								// Initialize the UART for console I/O.
-	
-	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1;								// Set up UART1 module.
-	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
-	UART1_CTL_R &= ~UART_CTL_UARTEN;										// Disable UART1 for configuration.
-	
-	GPIO_PORTB_LOCK_R = 0x4C4F434B;											// Unlock PORTB.
-	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
-	
-	GPIO_PORTB_AMSEL_R = 0x00;
-	GPIO_PORTB_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1;
-	GPIO_PORTB_AFSEL_R |= GPIO_PIN_0 | GPIO_PIN_1;			// Set PORTB0 and PORTB1 to alternate function.
-	GPIO_PORTB_DR2R_R |= GPIO_PIN_0 | GPIO_PIN_1;				// Set drive strengh to 2mA
-	GPIO_PORTB_PCTL_R |= 0x00000011;
-	
-	UART1_IBRD_R = 8;																		// Set baud rate to 115200 with 16MHz clock
-	UART1_FBRD_R = 54;
-	UART1_LCRH_R = UART_LCRH_WLEN_8;										// Set data length to 8 bits.
-	UART1_LCRH_R |= UART_LCRH_FEN;											// Enable FIFO.
-	UART1_CC_R = UART_CC_CS_PIOSC;											// Set clock source to PIOSC.
-	UART1_CTL_R |= UART_CTL_RXE | UART_CTL_TXE | UART_CTL_UARTEN;
 }
 
 void ConfigureI2C(void)
@@ -76,7 +56,7 @@ void ConfigureI2C(void)
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
 	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
 	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
-	GPIO_PORTB_PCTL_R |= 0x00003300;											// Configure PMC for PORTB2 and PORTB3
+	GPIO_PORTB_PCTL_R |= 0x00003300;										// Configure PMC for PORTB2 and PORTB3
 	
 	I2C0_MCR_R = I2C_MCR_MFE;														// Initiailize I2C0 in master mode
 	I2C0_MTPR_R = 0x00000009;														// SCL clock speed set to 100Kbps
@@ -124,8 +104,8 @@ int main()
 	//
 	// Start module startup configuration
 	//
-	ConfigureUART();
-	UARTprintf("----------\nUART configured\n");
+	ConfigureUART0();
+	UARTprintf("----------\nUART0 configured\n");
 	ConfigureI2C();
 	UARTprintf("I2C configured\n");
 	ConfigurePORTFLEDs();
