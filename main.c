@@ -27,10 +27,10 @@
 //}
 //#endif
 
-void ConfigureUART(void)
+void ConfigureUART0(void)
 {
 	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0;								// Enable UART0 module.
-	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGC2_GPIOA;						// Enable GPIOA module.
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R0;						// Enable GPIOA module.
 
   GPIOPinConfigure(GPIO_PA0_U0RX);										// Configure GPIO pins for UART mode.
   GPIOPinConfigure(GPIO_PA1_U0TX);
@@ -53,17 +53,16 @@ void ConfigureI2C(void)
 	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
 	
 	GPIO_PORTB_AMSEL_R = 0x00;													// Disable analog
-	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
-	GPIO_PORTB_PUR_R |= GPIO_PIN_2 | GPIO_PIN_3;
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
 	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
-	GPIO_PORTB_PCTL_R = 0x00003300;											// Configure PMC for PORTB2 and PORTB3
+	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
+	GPIO_PORTB_PCTL_R |= 0x00003300;										// Configure PMC for PORTB2 and PORTB3
 	
 	I2C0_MCR_R = I2C_MCR_MFE;														// Initiailize I2C0 in master mode
 	I2C0_MTPR_R = 0x00000009;														// SCL clock speed set to 100Kbps
 }
 
-void ConfigurePORTF()
+void ConfigurePORTFLEDs()
 {
 	volatile unsigned long delay;
 	
@@ -73,14 +72,18 @@ void ConfigurePORTF()
 	GPIO_PORTF_LOCK_R = 0x4C4F434B;											// Unlock PORTF
 	GPIO_PORTF_CR_R = 0xFF;															// Allow changes to PORTF
 	
-	GPIO_PORTF_AMSEL_R = 0x00;													// Disable analog
-	GPIO_PORTF_PCTL_R  = 0x00000000;										// PTCL GPIO on PORTF
-	GPIO_PORTF_DIR_R |= 0x0E;														// Set PORTF1-PORTF3 as outputs (RGB LEDs)
-	GPIO_PORTF_DIR_R &= ~0x11;													// SET PORTF0 & PORTF4 as inputs (SW1 and SW2)
-	GPIO_PORTF_AFSEL_R = 0x00;													// Disable alternate function on PORTF
-	GPIO_PORTF_PUR_R |= 0x11;														// Enable PUR on PORTF0 and PORTF4
-	GPIO_PORTF_DEN_R |= 0xFF;														// Enable digital I/O on PORTF
-	GPIO_PORTF_DATA_R &= ~0x0E;													// Turn off LEDs
+	// Disable analog
+	GPIO_PORTF_AMSEL_R &= GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+	// PTCL GPIO on PORTF
+	GPIO_PORTF_PCTL_R  = 0x00000000;
+	// Set PORTF1-PORTF3 as outputs (RGB LEDs)
+	GPIO_PORTF_DIR_R |= GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
+	// Disable alternate function on PORTF
+	GPIO_PORTF_AFSEL_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+	// Enable digital I/O on PORTF
+	GPIO_PORTF_DEN_R |= GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
+	// Turn off LEDs
+	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 }
 
 int main()
@@ -100,16 +103,47 @@ int main()
 	//
 	// Start module startup configuration
 	//
-	ConfigureUART();
-	UARTprintf("----------\nUART configured\n");
+	ConfigureUART0();
+	UARTprintf("----------\nUART0 configured\n");
 	ConfigureI2C();
 	UARTprintf("I2C configured\n");
-	ConfigurePORTF();
+	ConfigurePORTFLEDs();
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
 	UARTprintf("LCD initialized\n");
-	
+	BLE_init();
+	UARTprintf("BLE initialized\n");
 	UARTprintf("----------\n\n");
+
+//	UARTprintf("Sending register address for read\n");
+//	I2C0_MDR_R = 0xC0;
+//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+//	
+//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+//	
+//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+//	{
+//		UARTprintf("Slave address ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave address ACK\n");
+//	}
+//	
+//	UARTprintf("Sending read request\n");
+//	I2C0_MSA_R = VL53L0X_ADDRESS + 1;
+//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+//	
+//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+//	
+//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+//	{
+//		UARTprintf("Slave address ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave address ACK\n");
+//	}
 	
 	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode in write mode
 	I2C0_MDR_R = 0x0C0;																	// Set data and start transmission
@@ -210,4 +244,61 @@ int main()
 			}
 		}
 	}
+//	for (int i = 0; i < 0xFE; i++)
+//	{
+	//	UARTprintf("Sending register address for read\n");
+	//	I2C0_MDR_R = 0xC0;
+	//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+	//	
+	//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+	//	
+	//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+	//	{
+	//		UARTprintf("Slave address ACK received\n");
+	//	}
+	//	else
+	//	{
+	//		UARTprintf("Error receiving slave address ACK\n");
+	//	}
+	//	
+	//	UARTprintf("Sending read request\n");
+	//	I2C0_MSA_R = VL53L0X_ADDRESS + 1;
+	//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+	//	
+	//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
+	//	
+	//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+	//	{
+	//		UARTprintf("Slave address ACK received\n");
+	//		break;
+	//	}
+	//	else
+	//	{
+	//		UARTprintf("Error receiving slave address ACK\n");
+	//	}
+//	}
+	
+//	char buffer[128] = "";
+//	char receiveChar;
+//	uint8_t i = 0;
+	
+//	while (1)
+//	{	
+//		while (UART1_FR_R & UART_FR_RXFE);
+		
+//		receiveChar = UART1_DR_R;
+		
+//		if ((receiveChar == '%') || (receiveChar == '\r'))
+//		{
+//			UARTprintf("< %s\n", buffer);
+//			strcpy(buffer, "");
+//		}
+//		else
+//		{
+//			strcat(buffer, &receiveChar);
+//			i++;
+//		}
+//	}
 }
+
+
