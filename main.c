@@ -162,8 +162,52 @@ int main()
 	
 	UARTprintf("Received: %d\n", I2C0_MDR_R); 
 	
-	while (1)
-	{
-		
+	GPIO_PORTE_DATA_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Turn dc motor to a known position (0-4)
+	
+	while (1)																						// Lowest priority is the dc motor commutation loop. Interrupted by any other communications.
+	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
+		switch (GPIO_PORTF_DATA_R |= GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7)
+		{
+			case 0:																					// 6 step commutation cycle
+			{
+				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
+				GPIO_PORTE_DATA_R |= GPIO_PIN_0;							// (0-4)
+				break;
+			}
+			case 1:
+			{
+				GPIO_PORTE_DATA_R &= ~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+				GPIO_PORTE_DATA_R |= GPIO_PIN_5;							// (0-5)
+				break;
+			}
+			case 2:
+			{
+				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
+				GPIO_PORTE_DATA_R |= GPIO_PIN_1;							// (1-5)
+				break;
+			}
+			case 3:
+			{
+				GPIO_PORTE_DATA_R &=~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+				GPIO_PORTE_DATA_R |= GPIO_PIN_3;							// (1-3)
+				break;
+			}
+			case 4:
+			{
+				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
+				GPIO_PORTE_DATA_R |= GPIO_PIN_2;							// (2-3)
+				break;
+			}
+			case 5:
+			{
+				GPIO_PORTE_DATA_R &=~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+				GPIO_PORTE_DATA_R |= GPIO_PIN_4;							// (2-4)
+				break;
+			}
+			default:																				// Unknown state, turn off all outputs
+			{
+				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+			}
+		}
 	}
 }
