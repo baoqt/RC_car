@@ -105,8 +105,8 @@ int main()
 	//
 	ConfigureUART0();
 	UARTprintf("----------\nUART0 configured\n");
-	ConfigureI2C();
-	UARTprintf("I2C configured\n");
+	//ConfigureI2C();
+	//UARTprintf("I2C configured\n");
 	ConfigurePORTFLEDs();
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
@@ -145,104 +145,104 @@ int main()
 //		UARTprintf("Error receiving slave address ACK\n");
 //	}
 	
-	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode in write mode
-	I2C0_MDR_R = 0x0C0;																	// Set data and start transmission
-	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+//	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode in write mode
+//	I2C0_MDR_R = 0x0C0;																	// Set data and start transmission
+//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+//	
+//	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
+//	{
+//	}
+//	
+//	if (!(I2C0_MCS_R & I2C_MCS_DATACK))
+//	{
+//		UARTprintf("Slave data ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave data ACK\n");
+//	}
+//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+//	{
+//		UARTprintf("Slave address ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave address ACK\n");
+//	}
+//	
+//	I2C0_MSA_R = VL53L0X_ADDRESS + 1;										// Set slave address in transmit mode in read mode
+//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
+//	
+//	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
+//	{
+//	}
+//	
+//	if (!(I2C0_MCS_R & I2C_MCS_DATACK))
+//	{
+//		UARTprintf("Slave data ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave data ACK\n");
+//	}
+//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
+//	{
+//		UARTprintf("Slave address ACK received\n");
+//	}
+//	else
+//	{
+//		UARTprintf("Error receiving slave address ACK\n");
+//	}
+//	
+//	UARTprintf("Received: %d\n", I2C0_MDR_R); 
 	
-	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
-	{
-	}
-	
-	if (!(I2C0_MCS_R & I2C_MCS_DATACK))
-	{
-		UARTprintf("Slave data ACK received\n");
-	}
-	else
-	{
-		UARTprintf("Error receiving slave data ACK\n");
-	}
-	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
-	{
-		UARTprintf("Slave address ACK received\n");
-	}
-	else
-	{
-		UARTprintf("Error receiving slave address ACK\n");
-	}
-	
-	I2C0_MSA_R = VL53L0X_ADDRESS + 1;										// Set slave address in transmit mode in read mode
-	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
-	
-	while (I2C0_MCS_R & I2C_MCS_BUSY)										// Check if master is busy
-	{
-	}
-	
-	if (!(I2C0_MCS_R & I2C_MCS_DATACK))
-	{
-		UARTprintf("Slave data ACK received\n");
-	}
-	else
-	{
-		UARTprintf("Error receiving slave data ACK\n");
-	}
-	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
-	{
-		UARTprintf("Slave address ACK received\n");
-	}
-	else
-	{
-		UARTprintf("Error receiving slave address ACK\n");
-	}
-	
-	UARTprintf("Received: %d\n", I2C0_MDR_R); 
-	
-	GPIO_PORTE_DATA_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Turn dc motor to a known position (0-4)
+	//GPIO_PORTE_DATA_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Turn dc motor to a known position (0-4)
 	
 	while (1)																						// Lowest priority is the dc motor commutation loop. Interrupted by any other communications.
 	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
-		switch (GPIO_PORTF_DATA_R |= GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7)
-		{
-			case 0:																					// 6 step commutation cycle
-			{
-				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
-				GPIO_PORTE_DATA_R |= GPIO_PIN_0;							// (0-4)
-				break;
-			}
-			case 1:
-			{
-				GPIO_PORTE_DATA_R &= ~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
-				GPIO_PORTE_DATA_R |= GPIO_PIN_5;							// (0-5)
-				break;
-			}
-			case 2:
-			{
-				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
-				GPIO_PORTE_DATA_R |= GPIO_PIN_1;							// (1-5)
-				break;
-			}
-			case 3:
-			{
-				GPIO_PORTE_DATA_R &=~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
-				GPIO_PORTE_DATA_R |= GPIO_PIN_3;							// (1-3)
-				break;
-			}
-			case 4:
-			{
-				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
-				GPIO_PORTE_DATA_R |= GPIO_PIN_2;							// (2-3)
-				break;
-			}
-			case 5:
-			{
-				GPIO_PORTE_DATA_R &=~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
-				GPIO_PORTE_DATA_R |= GPIO_PIN_4;							// (2-4)
-				break;
-			}
-			default:																				// Unknown state, turn off all outputs
-			{
-				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
-			}
-		}
+//		switch (GPIO_PORTF_DATA_R |= GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7)
+//		{
+//			case 0:																					// 6 step commutation cycle
+//			{
+//				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
+//				GPIO_PORTE_DATA_R |= GPIO_PIN_0;							// (0-4)
+//				break;
+//			}
+//			case 1:
+//			{
+//				GPIO_PORTE_DATA_R &= ~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+//				GPIO_PORTE_DATA_R |= GPIO_PIN_5;							// (0-5)
+//				break;
+//			}
+//			case 2:
+//			{
+//				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
+//				GPIO_PORTE_DATA_R |= GPIO_PIN_1;							// (1-5)
+//				break;
+//			}
+//			case 3:
+//			{
+//				GPIO_PORTE_DATA_R &=~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+//				GPIO_PORTE_DATA_R |= GPIO_PIN_3;							// (1-3)
+//				break;
+//			}
+//			case 4:
+//			{
+//				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
+//				GPIO_PORTE_DATA_R |= GPIO_PIN_2;							// (2-3)
+//				break;
+//			}
+//			case 5:
+//			{
+//				GPIO_PORTE_DATA_R &=~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+//				GPIO_PORTE_DATA_R |= GPIO_PIN_4;							// (2-4)
+//				break;
+//			}
+//			default:																				// Unknown state, turn off all outputs
+//			{
+//				GPIO_PORTE_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_4 & ~GPIO_PIN_5;
+//			}
+//		}
 	}
 //	for (int i = 0; i < 0xFE; i++)
 //	{
