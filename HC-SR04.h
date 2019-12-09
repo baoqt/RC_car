@@ -3,6 +3,10 @@
 // Uses the following pins of PORTA:
 // PORTA6		-		TRIG
 // PORTB7 	- 	ECHO
+//
+// Uses TIMER2 to set distance polling frequency
+// Uses TIMER3 to get measurement value
+////////////////////////////////////////////////////////////
 
 #include <stdint.h>
 #include <string.h>
@@ -55,9 +59,9 @@ void Configure_TIMER2(unsigned long period)
 	TIMER2_TAILR_R = period - 1;												// Load start value
 	NVIC_PRI5_R &= ~0xE0000000; 	 											// configure Timer2 interrupt priority as 0
 	NVIC_EN0_R |= 0x00800000;     											// enable interrupt 23 in NVIC (Timer2A)
-	TIMER2_IMR_R |= TIMER_IMR_TATOIM;
+	TIMER2_IMR_R |= TIMER_IMR_TATOIM;										// Clear interrupt flag.
 	
-	TIMER2_CTL_R |= TIMER_CTL_TAEN;
+	TIMER2_CTL_R |= TIMER_CTL_TAEN;											// Enable TIMER2.
 }
 
 void Configure_TIMER3()
@@ -77,7 +81,7 @@ void Configure_TIMER3()
 void HCSR04_init()
 {
 	Configure_PORTA();
-	Configure_TIMER2(0x4000000);
+	Configure_TIMER2(0x4000000);												// Adjust this period to change distance polling frequency.
 	Configure_TIMER3();
 }
 
@@ -91,10 +95,10 @@ void TIMER2A_Handler(void)
 	SysCtlDelay(4000);																	// Short delay to allow for sensor latency.
 	while (GPIO_PORTA_DATA_R & GPIO_PIN_7);							// Wait until measurement is finished.
 	
-	TIMER3_CTL_R &= ~TIMER_CTL_TAEN;											// Disable TIMER3 to read delay.
+	TIMER3_CTL_R &= ~TIMER_CTL_TAEN;										// Disable TIMER3 to read delay.
 	DELAY = TIMER3_TAV_R;																// Get delay value.
 	TIMER3_TAV_R = 0;																		// Reset TIMER3's value.
 	GPIO_PORTA_DATA_R |= GPIO_PIN_6;										// Raise TRIG, ending the measurement.
 	
-	UARTprintf("Delay: %04X.%04X\n", ((0xFFFF0000 & DELAY) >> 16), (0xFFFF & DELAY));
+	UARTprintf("Delay: %04X.%04X\n", ((0xFFFF0000 & DELAY) >> 16), (0x0000FFFF & DELAY));
 }

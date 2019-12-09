@@ -3,6 +3,15 @@
 // Uses the following pins of PORTB:
 // PORTB0		-		UART1 RX
 // PORTB1 	- 	UART1 TX
+//
+// Uses the following pins of PORTF:
+// PORTF0		-		PB 0
+// PORTF4		-		PB 1
+//
+// Uses PORTF negative edge interrupts on the previous pins
+// Uses TIMER0 to debounce PBs on previous pins
+// Uses TIMER1 to periodically forward UART1 to UART0 for debugging
+////////////////////////////////////////////////////////////
 
 #include <stdint.h>
 #include <string.h>
@@ -44,7 +53,7 @@ void ConfigureUART1(void)
 	GPIO_PORTB_AMSEL_R &= GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_PORTB_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_0 | GPIO_PIN_1;			// Set PORTB0 and PORTB1 to alternate function.
-	GPIO_PORTB_PCTL_R |= 0x00000011;
+	GPIO_PORTB_PCTL_R |= GPIO_PCTL_PB0_U1RX | GPIO_PCTL_PB1_U1TX;
 	
 	UART1_IBRD_R = 8;																		// Set baud rate to 115200 with 16MHz clock
 	UART1_FBRD_R = 54;

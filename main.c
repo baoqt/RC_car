@@ -54,7 +54,8 @@ void ConfigureI2C(void)
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
 	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
 	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
-	GPIO_PORTB_PCTL_R |= 0x00003300;										// Configure PMC for PORTB2 and PORTB3
+	// Configure PMC for PORTB2 and PORTB3
+	GPIO_PORTB_PCTL_R |= GPIO_PCTL_PB2_I2C0SCL | GPIO_PCTL_PB3_I2C0SDA;
 	
 	I2C0_MCR_R = I2C_MCR_MFE;														// Initiailize I2C0 in master mode
 	I2C0_MTPR_R = 0x00000009;														// SCL clock speed set to 100Kbps

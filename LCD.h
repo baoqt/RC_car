@@ -1,13 +1,12 @@
 // Header file for NHD-C12832A1Z-NSW-BBW-3V3 LCD module
 //
 // Uses the following pins of PORTA:
-// PORTA0		-		!chip select (!CS)
-// PORTA1		-		!reset (!RS)
-// PORTA2		-		message mode, 0 = command, 1 = data (A0)
-// PORTA3		-		clock (SCL)
-// PORTA4		-		serial input (SI)
+// PORTA2		-		SCL
+// PORTA5		-		STX
 //
-// Uses timer 2A for communication clocking
+// Uses the following pins of PORTB:
+// PORTB5		-		message mode, 0 = command, 1 = data (A0)
+////////////////////////////////////////////////////////////
 
 #include <stdint.h>
 #include <string.h>
@@ -44,6 +43,27 @@ void LCD_go_to(uint8_t page, uint8_t offset);
 void LCD_write_char(char character);
 void LCD_write(char stirng[]);
 
+void Configure_SSI0(void);
+void Configure_PORTB(void);
+
+void Configure_SSI0(void)
+{
+	
+}
+
+void Configure_PORTB(void)
+{
+	unsigned long delay;
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+	delay = SYSCTL_RCGC2_R;
+	
+	GPIO_PORTB_AMSEL_R &= ~GPIO_PIN_5;
+	GPIO_PORTB_PCTL_R &= ~GPIO_PCTL_PA5_M;
+	GPIO_PORTB_DIR_R |= GPIO_PIN_5;
+	GPIO_PORTB_AFSEL_R &= ~GPIO_PIN_5;
+	GPIO_PORTB_DEN_R |= GPIO_PIN_5;
+}
+
 void command(uint8_t command)
 {
 	
@@ -58,6 +78,8 @@ void data(uint8_t data)
 
 void LCD_init()
 {
+	Configure_SSI0();
+	Configure_PORTB();
 	command(displayOff);
 	command(ADCSelectNormal);
 	command(modeSelectNormal);
