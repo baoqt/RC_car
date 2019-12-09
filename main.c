@@ -105,6 +105,8 @@ int main()
 	UARTprintf("----------\nUART0 configured\n");
 	//ConfigureI2C();
 	//UARTprintf("I2C configured\n");
+	HCSR04_init();
+	UARTprintf("HC-SR04 initialized\n");
 	ConfigurePORTFLEDs();
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
@@ -165,9 +167,10 @@ int main()
 //	UARTprintf("Received: %d\n", I2C0_MDR_R); 
 	
 	//GPIO_PORTE_DATA_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Turn dc motor to a known position (0-4)
-	
+		
 	while (1)																						// Lowest priority is the dc motor commutation loop. Interrupted by any other communications.
 	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
+	}
 //		switch (GPIO_PORTF_DATA_R |= GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7)
 //		{
 //			case 0:																					// 6 step commutation cycle
@@ -267,6 +270,6 @@ int main()
 //			i++;
 //		}
 //	}
-}
+//}
 
 

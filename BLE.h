@@ -177,6 +177,7 @@ void TIMER0A_Handler(void)
 
 void TIMER1A_Handler(void)
 {
+	TIMER1_ICR_R |= TIMER_ICR_TATOCINT;
 	if (!UART1_RX_FLAG && !UART1_BUFFER_EMPTY)					// Only while there are no messages to receive from UART1 and messages exist to be forwarded.
 	{
 		
@@ -200,7 +201,7 @@ void UART1_Handler(void)
 	UART1_RX_FLAG = 1;																	// Block UART0 burst TX.
 	if (UART1_MIS_R & UART_MIS_TXMIS)										// TX interrupt.
 	{
-		UART1_ICR_R &= ~UART_ICR_TXIC;										// Clear TX interrupt flag.
+		UART1_ICR_R |= UART_ICR_TXIC;											// Clear TX interrupt flag.
 		UART1_CTL_R |= UART_CTL_TXE;											// Enable TX.
 		
 		while (!(UART1_FR_R & UART_FR_TXFE));							// Wait until TX FIFO buffer is empty.
@@ -209,7 +210,7 @@ void UART1_Handler(void)
 	}
 	if (UART1_MIS_R & UART_MIS_RXMIS)										// RX interrupt.
 	{
-		UART1_ICR_R &= ~UART_ICR_RXIC;										// Clear RX interrupt flag.
+		UART1_ICR_R = UART_ICR_RXIC;											// Clear RX interrupt flag.
 		
 		while (!(UART1_FR_R & UART_FR_RXFE)){							// Loop until receive buffer is empty
 			char RXChar = UART1_DR_R;												// Read one chara from FIFO.
