@@ -18,3 +18,4 @@
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: BLE.h
 .\objects\main.o: VL53L0X.h
+.\objects\main.o: HC-SR04.h

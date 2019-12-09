@@ -18,6 +18,7 @@
 #include "LCD.h"
 #include "BLE.h"
 #include "VL53L0X.h"
+#include "HC-SR04.h"
 
 #define VL53L0X_ADDRESS	0x00000052
 
@@ -49,10 +50,7 @@ void ConfigureI2C(void)
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;						// Enable GPIOB module.
 	delay = SYSCTL_RCGC2_R;
 	
-	GPIO_PORTB_LOCK_R |= 0x4C4F434B;										// Unlock PORTB
-	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
-	
-	GPIO_PORTB_AMSEL_R = 0x00;													// Disable analog
+	GPIO_PORTB_AMSEL_R &= GPIO_PIN_2 | GPIO_PIN_3;			// Disable analog
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_2 | GPIO_PIN_3;			// Enable alternate function for PORTB2 and PORTB3
 	GPIO_PORTB_ODR_R |=  GPIO_PIN_3;										// Enable open drain for PORTB3 - I2C0SDA
 	GPIO_PORTB_DEN_R |= GPIO_PIN_2 | GPIO_PIN_3;				// Enable digital I/O on PORTB2 and PORTB3
@@ -114,36 +112,6 @@ int main()
 	BLE_init();
 	UARTprintf("BLE initialized\n");
 	UARTprintf("----------\n\n");
-
-//	UARTprintf("Sending register address for read\n");
-//	I2C0_MDR_R = 0xC0;
-//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
-//	
-//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
-//	
-//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
-//	{
-//		UARTprintf("Slave address ACK received\n");
-//	}
-//	else
-//	{
-//		UARTprintf("Error receiving slave address ACK\n");
-//	}
-//	
-//	UARTprintf("Sending read request\n");
-//	I2C0_MSA_R = VL53L0X_ADDRESS + 1;
-//	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
-//	
-//	while (I2C0_MCS_R & I2C_MCS_BUSBSY);														// Fix this maybe
-//	
-//	if (!(I2C0_MCS_R & I2C_MCS_ADRACK))
-//	{
-//		UARTprintf("Slave address ACK received\n");
-//	}
-//	else
-//	{
-//		UARTprintf("Error receiving slave address ACK\n");
-//	}
 	
 //	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode in write mode
 //	I2C0_MDR_R = 0x0C0;																	// Set data and start transmission

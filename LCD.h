@@ -11,6 +11,14 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
+
+#include "inc/tm4c123gh6pm.h"
+#include "inc/hw_memmap.h"
+#include "inc/hw_types.h"
+
+#include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
 
 #define displayOn 0xAF
 #define displayOff 0xAE

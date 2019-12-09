@@ -19,7 +19,7 @@
 
 bool DEBOUNCE_FLAG = 0;																// Flag used to disable GPIOF interrupt while debouncing.
 bool UART1_RX_FLAG = 0;																// Flag used to disable UART forwarding interrupt during UART1 RX.
-bool UART1_BUFFER_EMPTY = 0;													// Flag used to mark empty UART1 buffer.
+bool UART1_BUFFER_EMPTY = 1;													// Flag used to mark empty UART1 buffer.
 
 char buffer[32][64];																	// 32 (word) x 64 (length) buffer. 
 uint8_t wordIndex = 0;																// Word index.
@@ -41,13 +41,9 @@ void ConfigureUART1(void)
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
 	UART1_CTL_R &= ~UART_CTL_UARTEN;										// Disable UART1 for configuration.
 	
-	GPIO_PORTB_LOCK_R = 0x4C4F434B;											// Unlock PORTB.
-	GPIO_PORTB_CR_R = 0xFF;															// Allow changes to PORTB
-	
-	GPIO_PORTB_AMSEL_R = 0x00;
+	GPIO_PORTB_AMSEL_R &= GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_PORTB_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_0 | GPIO_PIN_1;			// Set PORTB0 and PORTB1 to alternate function.
-	GPIO_PORTB_DR2R_R |= GPIO_PIN_0 | GPIO_PIN_1;				// Set drive strengh to 2mA
 	GPIO_PORTB_PCTL_R |= 0x00000011;
 	
 	UART1_IBRD_R = 8;																		// Set baud rate to 115200 with 16MHz clock
@@ -76,7 +72,7 @@ void ConfigurePORTF()
 	GPIO_PORTF_CR_R = 0xFF;															// Allow changes to PORTF
 	
 	GPIO_PORTF_AMSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;		// Disable analog on the two onboard pushbuttons.
-	GPIO_PORTF_PCTL_R  = 0x00000000;										// PTCL GPIO on PORTF
+	GPIO_PORTF_PCTL_R = 0x00000000;											// PTCL GPIO on PORTF
 	GPIO_PORTF_DIR_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;			// SET PORTF0 & PORTF4 as inputs (SW1 and SW2)
 	GPIO_PORTF_AFSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;		// Disable alternate function on PORTF
 	GPIO_PORTF_PUR_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Enable PUR on PORTF0 and PORTF4
@@ -183,9 +179,10 @@ void TIMER1A_Handler(void)
 {
 	if (!UART1_RX_FLAG && !UART1_BUFFER_EMPTY)					// Only while there are no messages to receive from UART1 and messages exist to be forwarded.
 	{
-		GPIO_PORTF_DATA_R ^= GPIO_PIN_1;
+		
 		if (bufferLower < wordIndex)
 		{
+			
 			UARTprintf(&buffer[bufferLower][0]);
 			bufferLower++;
 		}
@@ -200,7 +197,6 @@ void TIMER1A_Handler(void)
 
 void UART1_Handler(void)
 {
-	//GPIO_PORTF_DATA_R ^= GPIO_PIN_3;
 	UART1_RX_FLAG = 1;																	// Block UART0 burst TX.
 	if (UART1_MIS_R & UART_MIS_TXMIS)										// TX interrupt.
 	{
@@ -235,5 +231,5 @@ void UART1_Handler(void)
 		}
 	}
 	
-	UART1_RX_FLAG = 0;																	// Release block on UART0 burst TX.
+	UART1_RX_FLAG = 0;																	// Release block on UART0 TX.
 }
