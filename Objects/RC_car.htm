@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\RC_car.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\RC_car.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Dec 09 20:22:46 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Tue Dec 10 15:02:05 2019
 <BR><P>
 <H3>Maximum Stack Usage =        128 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -401,7 +401,6 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysCtlDelay
 <LI><a href="#[a9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysCtlClockSet
-<LI><a href="#[23]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIMER2A_Handler
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HCSR04_Get_Distance
 </UL>
 
@@ -1248,10 +1247,8 @@ Global Symbols
 
 <P><STRONG><a name="[dd]"></a>__semihosting_library_function</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, indicate_semi.o(.text), UNUSED)
 
-<P><STRONG><a name="[b2]"></a>BLDC_init</STRONG> (Thumb, 174 bytes, Stack size 8 bytes, main.o(i.BLDC_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = BLDC_init
-</UL>
-<BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<P><STRONG><a name="[b2]"></a>BLDC_init</STRONG> (Thumb, 158 bytes, Stack size 0 bytes, main.o(i.BLDC_init))
+<BR><BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
 <P><STRONG><a name="[91]"></a>BLE_command</STRONG> (Thumb, 44 bytes, Stack size 16 bytes, main.o(i.BLE_command))
@@ -1426,11 +1423,10 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_tm4c123.o(RESET)
 </UL>
-<P><STRONG><a name="[23]"></a>TIMER2A_Handler</STRONG> (Thumb, 48 bytes, Stack size 8 bytes, main.o(i.TIMER2A_Handler))
+<P><STRONG><a name="[23]"></a>TIMER2A_Handler</STRONG> (Thumb, 72 bytes, Stack size 8 bytes, main.o(i.TIMER2A_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = TIMER2A_Handler &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
 </UL>
 <BR>[Calls]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTprintf
-<LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysCtlDelay
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HCSR04_Get_Distance
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_tm4c123.o(RESET)
@@ -1506,11 +1502,11 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[a8]"></a>command</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, main.o(i.command))
+<P><STRONG><a name="[a8]"></a>command</STRONG> (Thumb, 16 bytes, Stack size 0 bytes, main.o(i.command))
 <BR><BR>[Called By]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_init
 </UL>
 
-<P><STRONG><a name="[88]"></a>main</STRONG> (Thumb, 354 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[88]"></a>main</STRONG> (Thumb, 384 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = main &rArr; Test_I2C0_Connection &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
 </UL>
 <BR>[Calls]<UL><LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTprintf

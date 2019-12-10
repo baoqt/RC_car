@@ -75,12 +75,14 @@ void Configure_PORTB(void)
 
 void command(uint8_t command)
 {
+	GPIO_PORTB_DATA_R &= ~GPIO_PIN_5;											// Pull PORTB5 low for data
 	
 	return;
 }
 
 void data(uint8_t data)
 {
+	GPIO_PORTB_DATA_R |= GPIO_PIN_5;											// Pull PORTB5 high for data
 	
 	return;
 }

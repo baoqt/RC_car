@@ -62,9 +62,8 @@ void ConfigurePORTFLEDs()
 
 void BLDC_init()
 {
-	volatile unsigned long delay;
 	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOE;
-	delay = SYSCTL_RCGC2_R;
+	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOD;
 	
 	GPIO_PORTE_AMSEL_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 	GPIO_PORTE_PCTL_R &= ~GPIO_PCTL_PE1_M & ~GPIO_PCTL_PE2_M & ~GPIO_PCTL_PE3_M;
@@ -72,11 +71,7 @@ void BLDC_init()
 	GPIO_PORTE_AFSEL_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 	GPIO_PORTE_DEN_R |= GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
 	
-	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOD;
-	delay = SYSCTL_RCGC2_R;
-	
 	GPIO_PORTD_AMSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-	//GPIO_PORTD_PCTL_R &= ~GPIO_PCTL_PE0_M & ~GPIO_PCTL_PE1_M & ~GPIO_PCTL_PE2_M & ~GPIO_PCTL_PE3_M & ~GPIO_PCTL_PE6_M & ~GPIO_PCTL_PE7_M;
 	GPIO_PORTD_DIR_R |= GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7;
 	GPIO_PORTD_AFSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
 	GPIO_PORTD_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7;
@@ -143,42 +138,43 @@ int main()
 	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
 		if (DELAY > 0x0000FFFF)
 		{
+			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1;
 			switch ((GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1)
 			{
 				case 1:																					// 6 step commutation cycle
 				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_1;							// (1-3)
+					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_2 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
+					GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;	// (1-3)
 					break;
 				}
 				case 3:
 				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_2;							// (2-3)
+					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
+					GPIO_PORTD_DATA_R |= GPIO_PIN_2 | GPIO_PIN_3;	// (2-3)
 					break;
 				}
 				case 2:
 				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_4;							// (2-6)
+					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_3 & ~GPIO_PIN_7;
+					GPIO_PORTD_DATA_R |= GPIO_PIN_2 | GPIO_PIN_6;	// (2-6)
 					break;
 				}
 				case 6:
 				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_0;							// (0-6)
+					GPIO_PORTD_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_7;
+					GPIO_PORTD_DATA_R |= GPIO_PIN_0 | GPIO_PIN_6;	// (0-6)
 					break;
 				}
 				case 4:
 				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_5;							// (0-7)
+					GPIO_PORTD_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6;
+					GPIO_PORTD_DATA_R |= GPIO_PIN_0 | GPIO_PIN_7;	// (0-7)
 					break;
 				}
 				case 5:
 				{
-					GPIO_PORTD_DATA_R &=~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_4;							// (1-7)
+					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6;
+					GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_7;	// (1-7)
 					break;
 				}
 				default:																				// Unknown state, turn off all outputs
@@ -189,7 +185,7 @@ int main()
 		}
 		else
 		{
-
+			GPIO_PORTF_DATA_R |= GPIO_PIN_1;
 		}
 	}
 }
@@ -197,15 +193,8 @@ int main()
 void TIMER2A_Handler(void)
 {
 	DELAY = HCSR04_Get_Distance();
-	if (DELAY > 0x0000FFFF)
-		{
-			UARTprintf("Not obstructed...\n");
-			SysCtlDelay(7500000);
-		}
-	else
-		{
-			UARTprintf("Obstructed...\n");
-			SysCtlDelay(7500000);
-		}
 	//UARTprintf("Delay: %04X.%04X\n", ((0xFFFF0000 & DELAY) >> 16), (0x0000FFFF & DELAY));
+		UARTprintf("State: %d\n", (GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1);
+		UARTprintf("Upper: %d\n", (GPIO_PORTD_DATA_R & (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2)));
+		UARTprintf("Lower: %d\n\n", ((GPIO_PORTD_DATA_R & (GPIO_PIN_6 | GPIO_PIN_7)) >> 5) | (GPIO_PORTD_DATA_R & GPIO_PIN_3) >> 2);
 }

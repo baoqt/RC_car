@@ -68,10 +68,9 @@ void HCSR04_init()
 
 unsigned long HCSR04_Get_Distance()
 {
-	unsigned long delay;
-	
 	TIMER2_ICR_R |= TIMER_ICR_TATOCINT;
 	
+	TIMER3_TAV_R = 0;																		// Reset TIMER3's value.
 	GPIO_PORTA_DATA_R &= ~GPIO_PIN_6;										// Lower TRIG, preparing for a measurement.
 	TIMER3_CTL_R |= TIMER_CTL_TAEN;											// Enable TIMER3 to count pulsewidth.
 	
@@ -79,9 +78,7 @@ unsigned long HCSR04_Get_Distance()
 	while (GPIO_PORTA_DATA_R & GPIO_PIN_7);							// Wait until measurement is finished.
 	
 	TIMER3_CTL_R &= ~TIMER_CTL_TAEN;										// Disable TIMER3 to read delay.
-	delay = TIMER3_TAV_R;																// Get delay value.
-	TIMER3_TAV_R = 0;																		// Reset TIMER3's value.
 	GPIO_PORTA_DATA_R |= GPIO_PIN_6;										// Raise TRIG, ending the measurement.
 	
-	return delay;
+	return TIMER3_TAV_R;
 }
