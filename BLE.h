@@ -46,14 +46,17 @@ void Timer1_init(unsigned long period);								// Configures UART1 buffer to UAR
 
 void ConfigureUART1(void)
 {
-	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1;								// Set up UART1 module.
-	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
+	volatile unsigned long delay;
+	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART1;								// Enable UART1 module.
+	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOB;								// Enable PORTB module
+	delay = SYSCTL_RCGC2_R;
 	UART1_CTL_R &= ~UART_CTL_UARTEN;										// Disable UART1 for configuration.
 	
-	GPIO_PORTB_AMSEL_R &= GPIO_PIN_0 | GPIO_PIN_1;
+	GPIO_PORTB_AMSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1;
 	GPIO_PORTB_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1;
+	GPIO_PORTB_PCTL_R |= GPIO_PCTL_PB0_U1RX | GPIO_PCTL_PB1_U1TX;		// DEBUG: Check if UART1 is still transmitting after this change.
 	GPIO_PORTB_AFSEL_R |= GPIO_PIN_0 | GPIO_PIN_1;			// Set PORTB0 and PORTB1 to alternate function.
-	GPIO_PORTB_PCTL_R |= GPIO_PCTL_PB0_U1RX | GPIO_PCTL_PB1_U1TX;
+	
 	
 	UART1_IBRD_R = 8;																		// Set baud rate to 115200 with 16MHz clock
 	UART1_FBRD_R = 54;

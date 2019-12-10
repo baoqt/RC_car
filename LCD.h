@@ -48,12 +48,21 @@ void Configure_PORTB(void);
 
 void Configure_SSI0(void)
 {
+	volatile unsigned long delay;
+	
+	SYSCTL_RCGCSSI_R |= SYSCTL_RCGCSSI_R0;
+	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R0;
+	delay = SYSCTL_RCGC2_R;
+	
+	GPIO_PORTA_PCTL_R |= GPIO_PCTL_PA2_SSI0CLK | GPIO_PCTL_PA5_SSI0TX;
+	GPIO_PORTA_DEN_R |= GPIO_PIN_2 | GPIO_PIN_5;
+	GPIO_PORTA_PUR_R |= GPIO_PIN_2 | GPIO_PIN_5;
 	
 }
 
 void Configure_PORTB(void)
 {
-	unsigned long delay;
+	volatile unsigned long delay;
 	SYSCTL_RCGCGPIO_R |= SYSCTL_RCGCGPIO_R1;
 	delay = SYSCTL_RCGC2_R;
 	
