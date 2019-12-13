@@ -27,16 +27,15 @@
 #include "utils/UARTstdio.h"
 
 bool DEBOUNCE_FLAG = 0;																// Flag used to disable GPIOF interrupt while debouncing.
-bool UART1_RX_FLAG = 0;																// Flag used to disable UART forwarding interrupt during UART1 RX.
-bool UART1_BUFFER_EMPTY = 1;													// Flag used to mark empty UART1 buffer.
 
-char buffer[32][64];																	// 32 (word) x 64 (length) buffer. 
+char buffer[256];																			// 32 (word) x 64 (length) buffer. 
 uint8_t wordIndex = 0;																// Word index.
 uint8_t charIndex = 0;																// Char index.
 uint8_t bufferLower = 0;															// Buffer word lower index pointer.
 
 void BLE_init(void);																	// Configured required modules.
 void BLE_command(const char* pCommand);								// Sends a Bluetooth ASCII command over UART1
+void BLE_flush(void);
 
 void ConfigureUART1(void);														// Configures UART1 module for Bluetooth communication.
 void ConfigurePORTF(void);														// Configures PORTF push button inputs.
@@ -62,15 +61,16 @@ void ConfigureUART1(void)
 	UART1_FBRD_R = 54;
 	UART1_LCRH_R = UART_LCRH_WLEN_8;										// Set data length to 8 bits.
 	UART1_LCRH_R |= UART_LCRH_FEN;											// Enable FIFO.
+	UART1_IFLS_R |= UART_IFLS_RX1_8;
 	UART1_CC_R = UART_CC_CS_PIOSC;											// Set clock source to PIOSC.
-	
 	UART1_ICR_R = 0x00;																	// Clear interrupt flags
+	
 	NVIC_PRI1_R &= ~0x00800000;													// Set interrupt 6 priority to level 3.
 	NVIC_PRI1_R |= 0x00600000;
 	NVIC_EN0_R |= 0x00000040;														// Enable interrupt 6 in NVIC (UART1)
 	UART1_IM_R |= UART_IM_TXIM | UART_IM_RXIM;					// Enable FIFO interruptps for RX and TX.
 	UART1_CTL_R &= UART_CTL_TXE;												// Disable TX until FIFO interrupt.
-	UART1_CTL_R |= UART_CTL_RXE | UART_CTL_UARTEN;			// Enable UART1 RX.
+	UART1_CTL_R |= UART_CTL_TXE | UART_CTL_RXE | UART_CTL_UARTEN;			// Enable UART1 RX.
 }
 
 void ConfigurePORTF()
@@ -127,7 +127,7 @@ void Timer1_Init(unsigned long period)
 	delay = SYSCTL_RCGC1_R;
 	TIMER1_CTL_R &= ~TIMER_CTL_TAEN;
 	TIMER1_CFG_R = 0x00000000;
-	TIMER1_TAMR_R |= 0x00000001;
+	TIMER1_TAMR_R |= 0x00000002;
 	TIMER1_TAMR_R &= ~TIMER_TAMR_TACDIR;
 	TIMER1_TAILR_R = period - 1;
 	NVIC_PRI5_R &= 0x00008000;
@@ -143,7 +143,7 @@ void BLE_init()
 	ConfigurePORTF();
 	ConfigurePORTFInterrupts();
 	Timer0_Init(0xEFFFFF);
-	Timer1_Init(0xFFFFFFF);
+	Timer1_Init(0x2FFFFFF);
 }
 
 void BLE_command(const char* pCommand)
@@ -154,9 +154,33 @@ void BLE_command(const char* pCommand)
 		UART1_DR_R = pCommand[i];
 	}
 	
-	UART1_DR_R = '\r';
+	if (strcmp(pCommand, "$$$") != 0)
+	{
+		UART1_DR_R = '\r';
+	}
 	
-	UARTprintf("> %s\n", pCommand);
+	UARTprintf("%s\n< ", pCommand);
+}
+
+void BLE_flush(void)
+{
+	while (!(UART1_FR_R & UART_FR_RXFE))							// Flush out any remaining characters in UART buffer into burst buffer
+		{
+			char RXChar = UART1_DR_R;
+			
+			if ((RXChar == '%') || (RXChar == '\n'))				// Detected string delimiter.
+			{
+				strcat(buffer, "\n< ");												// Format RX messages.
+			}
+			else if (RXChar == '>')
+			{
+				strcat(buffer, "\n>");
+			}
+			else
+			{																								// Add received char to buffer.
+				strcat(buffer, &RXChar);
+			}
+		}
 }
 
 void GPIOF_Handler(void)
@@ -172,7 +196,7 @@ void GPIOF_Handler(void)
 	}
 	else if (!(GPIO_PORTF_DATA_R & GPIO_PIN_0) && (DEBOUNCE_FLAG == 0))
 	{
-		BLE_command("");
+		BLE_command("SS,C0");
 		DEBOUNCE_FLAG = 1;
 		GPIO_PORTF_IM_R &= ~0x11;
 		TIMER0_CTL_R |= TIMER_CTL_TAEN;
@@ -190,59 +214,32 @@ void TIMER0A_Handler(void)
 void TIMER1A_Handler(void)
 {
 	TIMER1_ICR_R |= TIMER_ICR_TATOCINT;
-	if (!UART1_RX_FLAG && !UART1_BUFFER_EMPTY)					// Only while there are no messages to receive from UART1 and messages exist to be forwarded.
+	
+	if (!(UART1_FR_R & UART_FR_RXFE))										// If FIFO buffer has any remaining characters
 	{
-		
-		if (bufferLower < wordIndex)
-		{
-			
-			UARTprintf(&buffer[bufferLower][0]);
-			bufferLower++;
-		}
-		else
-		{
-			bufferLower = 0;
-			wordIndex = 0;
-			UART1_BUFFER_EMPTY = 1;
-		}
+		BLE_flush();																			// Flush remaining characters into burst buffer
+	}
+	
+	if (strcmp(buffer, "") != 0)												// If burst buffer is not empty
+	{
+		UARTprintf(buffer);																// Burst forward UART1 -> UART0
+		strcpy(buffer, "");																// Clear burst buffer
 	}
 }
 
 void UART1_Handler(void)
 {
-	UART1_RX_FLAG = 1;																	// Block UART0 burst TX.
 	if (UART1_MIS_R & UART_MIS_TXMIS)										// TX interrupt.
 	{
 		UART1_ICR_R |= UART_ICR_TXIC;											// Clear TX interrupt flag.
-		UART1_CTL_R |= UART_CTL_TXE;											// Enable TX.
-		
-		while (!(UART1_FR_R & UART_FR_TXFE));							// Wait until TX FIFO buffer is empty.
-		
-		UART1_CTL_R &= ~UART_CTL_TXE;											// Disable TX until next interrupt
 	}
 	if (UART1_MIS_R & UART_MIS_RXMIS)										// RX interrupt.
 	{
 		UART1_ICR_R = UART_ICR_RXIC;											// Clear RX interrupt flag.
+		TIMER1_CTL_R &= ~TIMER_CTL_TAEN;									// Disable UART forwarding interrupts.
 		
-		while (!(UART1_FR_R & UART_FR_RXFE)){							// Loop until receive buffer is empty
-			char RXChar = UART1_DR_R;												// Read one chara from FIFO.
-			
-			if ((RXChar == '%') || (RXChar == '\r'))				// Detected string delimiter.
-			{
-				strcat(&buffer[wordIndex][charIndex], "\r\n");// UART COM terminal formatting.
-				charIndex = 0;																// Buffer index <CR>, <LF>.
-				wordIndex = (wordIndex < 64) ? wordIndex++ : 0;
-				strcat(&buffer[wordIndex][charIndex], "< ");	// Format RX messages.
-				charIndex = 2;																// Place index on end of string.
-				UART1_BUFFER_EMPTY = 0;												// Mark buffer as not empty.
-			}
-			else
-			{																								// Add received char to buffer.
-				strcat(&buffer[wordIndex][charIndex], &RXChar);
-				charIndex++;																	// Increment char index.
-			}
-		}
+		BLE_flush();
+		
+		TIMER1_CTL_R |= TIMER_CTL_TAEN;										// Reenable UART forwarding interrupts.
 	}
-	
-	UART1_RX_FLAG = 0;																	// Release block on UART0 TX.
 }

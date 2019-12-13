@@ -21,6 +21,7 @@
 #include "HC-SR04.h"
 
 volatile unsigned long DELAY ;
+uint8_t STATE;
 
 void ConfigureUART0(void)
 {
@@ -70,6 +71,9 @@ void BLDC_init()
 	GPIO_PORTE_DIR_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 	GPIO_PORTE_AFSEL_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 	GPIO_PORTE_DEN_R |= GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3;
+	
+	GPIO_PORTD_LOCK_R = 0x4C4F434B;
+	GPIO_PORTD_CR_R = 0xFF;
 	
 	GPIO_PORTD_AMSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
 	GPIO_PORTD_DIR_R |= GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7;
@@ -132,14 +136,15 @@ int main()
 	UARTprintf("----------\n");
 	Test_I2C0_Connection();
 	
-	GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
+	//GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
 		
 	while (1)																						// Lowest priority is the dc motor commutation loop. Interrupted by any other communications.
 	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
 		if (DELAY > 0x0000FFFF)
 		{
 			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1;
-			switch ((GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1)
+			STATE = (GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1;
+			switch (STATE)
 			{
 				case 1:																					// 6 step commutation cycle
 				{
@@ -193,8 +198,8 @@ int main()
 void TIMER2A_Handler(void)
 {
 	DELAY = HCSR04_Get_Distance();
-	//UARTprintf("Delay: %04X.%04X\n", ((0xFFFF0000 & DELAY) >> 16), (0x0000FFFF & DELAY));
-		UARTprintf("State: %d\n", (GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1);
-		UARTprintf("Upper: %d\n", (GPIO_PORTD_DATA_R & (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2)));
-		UARTprintf("Lower: %d\n\n", ((GPIO_PORTD_DATA_R & (GPIO_PIN_6 | GPIO_PIN_7)) >> 5) | (GPIO_PORTD_DATA_R & GPIO_PIN_3) >> 2);
+//	UARTprintf("Delay: %04X.%04X\n", ((0xFFFF0000 & DELAY) >> 16), (0x0000FFFF & DELAY));
+//	UARTprintf("State: %d\n", STATE);
+//	UARTprintf("Upper: %d\n", (GPIO_PORTD_DATA_R & (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2)));
+//	UARTprintf("Lower: %d\n\n", ((GPIO_PORTD_DATA_R & (GPIO_PIN_6 | GPIO_PIN_7)) >> 5) | (GPIO_PORTD_DATA_R & GPIO_PIN_3) >> 2);
 }
