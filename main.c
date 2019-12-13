@@ -37,6 +37,36 @@ void ConfigureUART0(void)
   UARTStdioConfig(0, 115200, 16000000);								// Initialize the UART for console I/O.
 }
 
+void ConfigurePORTFPushButtons()
+{
+	volatile unsigned long delay;
+	
+	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF;								// Activate clock for PORTF
+	delay = SYSCTL_RCGC2_R;															// Dummy read to allow clock to activate
+	
+	GPIO_PORTF_LOCK_R = 0x4C4F434B;											// Unlock PORTF
+	GPIO_PORTF_CR_R = 0xFF;															// Allow changes to PORTF
+	
+	GPIO_PORTF_AMSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;		// Disable analog on the two onboard pushbuttons.
+	GPIO_PORTF_PCTL_R = 0x00000000;											// PTCL GPIO on PORTF
+	GPIO_PORTF_DIR_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;			// SET PORTF0 & PORTF4 as inputs (SW1 and SW2)
+	GPIO_PORTF_AFSEL_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;		// Disable alternate function on PORTF
+	GPIO_PORTF_PUR_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Enable PUR on PORTF0 and PORTF4
+	GPIO_PORTF_DEN_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Enable digital I/O on PORTF
+}
+
+void ConfigurePORTFInterrupts()
+{
+	GPIO_PORTF_IM_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;				// Disable interrupts on PORTF0 and PORTF4
+	GPIO_PORTF_IS_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;				// PORTF0 and PORTF4 configured edge sensitive
+	GPIO_PORTF_IBE_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;			// PORTF0 and PORTF4 generation controlled by IEV register
+	GPIO_PORTF_IEV_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;			// PORTF0 and PORTF4 configured falling edge
+	GPIO_PORTF_ICR_R = 0x00;														// Clear interrupt flag
+	NVIC_PRI7_R &= ~0x00E00000;													// Set interrupt 30 to priority 0.
+	NVIC_EN0_R |= 0x40000000;														// Enable interrupt 30 in NVIC (GPIOF)
+	GPIO_PORTF_IM_R |= 0x11;														// Enable interrupts on PORTF0 and PORTF4
+}
+
 void ConfigurePORTFLEDs()
 {
 	volatile unsigned long delay;
@@ -118,23 +148,27 @@ int main()
 	// Start module startup configuration
 	//
 	ConfigureUART0();
+	UARTprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	UARTprintf("----------\nUART0 configured\n");
 	VL53L0X_init();
 	UARTprintf("VL53L0X initialized\n");
 	HCSR04_init();
 	UARTprintf("HC-SR04 initialized\n");
+	ConfigurePORTFPushButtons();
+	UARTprintf("Tiva push buttons configured\n");
+	ConfigurePORTFInterrupts();
+	UARTprintf("PORTF interrupts configured\n");
 	ConfigurePORTFLEDs();
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
 	UARTprintf("LCD initialized\n");
-	BLE_init();
-	UARTprintf("BLE initialized\n");
 	BLDC_init();
 	UARTprintf("BLDC initialized\n");
-	Configure_TIMER2(0x4000000);												// Adjust this period to change distance polling frequency.
+	BLE_init();
+	UARTprintf("BLE initialized\n");
+	Configure_TIMER2(0x00FFFFFF);												// Adjust this period to change distance polling frequency.
 	UARTprintf("TIMER2 configured\n");
 	UARTprintf("----------\n");
-	Test_I2C0_Connection();
 	
 	//GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
 		
@@ -193,6 +227,26 @@ int main()
 			GPIO_PORTF_DATA_R |= GPIO_PIN_1;
 		}
 	}
+}
+
+void GPIOF_Handler(void)
+{
+	GPIO_PORTF_ICR_R |= 0x11;
+	
+//	if (!(GPIO_PORTF_DATA_R & GPIO_PIN_4) && (DEBOUNCE_FLAG == 0))
+//	{
+//		BLE_command("$$$");
+//		DEBOUNCE_FLAG = 1;
+//		GPIO_PORTF_IM_R &= ~0x11;
+//		TIMER0_CTL_R |= TIMER_CTL_TAEN;
+//	}
+//	else if (!(GPIO_PORTF_DATA_R & GPIO_PIN_0) && (DEBOUNCE_FLAG == 0))
+//	{
+//		BLE_command("SS,C0");
+//		DEBOUNCE_FLAG = 1;
+//		GPIO_PORTF_IM_R &= ~0x11;
+//		TIMER0_CTL_R |= TIMER_CTL_TAEN;
+//	}
 }
 
 void TIMER2A_Handler(void)

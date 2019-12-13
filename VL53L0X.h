@@ -45,12 +45,15 @@ void ConfigureI2C0(void)
 void VL53L0X_init(void)
 {
 	ConfigureI2C0();
+	Test_I2C0_Connection();
 }
 
 void Test_I2C0_Connection(void)
 {
+	UARTprintf("----------\n");
+	UARTprintf("Testing I2C0 connection...\n");
 	I2C0_MSA_R = VL53L0X_ADDRESS;												// Set slave address in transmit mode in write mode
-	UARTprintf("To Slave Address: %d\n", VL53L0X_ADDRESS >> 1);
+	UARTprintf("To Slave Address: 0x%x\n", VL53L0X_ADDRESS);
 	I2C0_MDR_R = 0xC0;																	// Set data and start transmission
 	UARTprintf("Register Address: 0xC0\n");
 	I2C0_MCS_R = I2C_MCS_STOP | I2C_MCS_START | I2C_MCS_RUN;
@@ -102,5 +105,14 @@ void Test_I2C0_Connection(void)
 		UARTprintf("Error receiving slave address ACK\n");
 	}
 	
-	UARTprintf("\nValue Received: %d\nI2C0 test concluded\n----------\n\n", I2C0_MDR_R);
+	UARTprintf("\nValue Received: %d\n", I2C0_MDR_R);
+	if (I2C0_MCS_R & (I2C_MCS_DATACK | I2C_MCS_ADRACK))
+	{
+		UARTprintf("Transmission failed\n");
+	}
+	else
+	{
+		UARTprintf("Transmission success\n");
+	}
+	UARTprintf("I2C0 test concluded\n----------\n");
 }
