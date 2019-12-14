@@ -58,6 +58,14 @@ void Configure_SSI0(void)
 	GPIO_PORTA_DEN_R |= GPIO_PIN_2 | GPIO_PIN_5;
 	GPIO_PORTA_PUR_R |= GPIO_PIN_2 | GPIO_PIN_5;
 	
+	SSI0_CR1_R &= SSI_CR1_SSE;
+	SSI0_CR1_R = 0x00000000;
+	SSI0_CC_R |= SSI_CC_CS_PIOSC;
+	SSI0_CPSR_R |= 0x00000002;
+	SSI0_CR0_R |= 0x00000100; 
+	SSI0_CR0_R |= SSI_CR0_SPH | SSI_CR0_SPO | SSI_CR0_DSS_8;
+	
+	SSI0_CR1_R |= SSI_CR1_SSE;
 }
 
 void Configure_PORTB(void)
@@ -76,6 +84,7 @@ void Configure_PORTB(void)
 void command(uint8_t command)
 {
 	GPIO_PORTB_DATA_R &= ~GPIO_PIN_5;											// Pull PORTB5 low for data
+	SSI0_DR_R = command;
 	
 	return;
 }
@@ -83,6 +92,7 @@ void command(uint8_t command)
 void data(uint8_t data)
 {
 	GPIO_PORTB_DATA_R |= GPIO_PIN_5;											// Pull PORTB5 high for data
+	SSI0_DR_R = data;
 	
 	return;
 }
@@ -91,6 +101,7 @@ void LCD_init()
 {
 	Configure_SSI0();
 	Configure_PORTB();
+	
 	command(displayOff);
 	command(ADCSelectNormal);
 	command(modeSelectNormal);
