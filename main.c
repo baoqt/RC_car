@@ -20,8 +20,12 @@
 #include "VL53L0X.h"
 #include "HC-SR04.h"
 
+#define LENGTH 255
+
 volatile unsigned long DELAY ;
-uint8_t STATE;
+uint8_t STATE = 0;
+uint8_t CMD = 0;
+char CMD_BUFFER[LENGTH];
 
 void ConfigureUART0(void)
 {
@@ -164,19 +168,58 @@ int main()
 	UARTprintf("LCD initialized\n");
 	BLDC_init();
 	UARTprintf("BLDC initialized\n");
-	BLE_init();
+	BLE_init(CMD_BUFFER, LENGTH);
 	UARTprintf("BLE initialized\n");
 	Configure_TIMER2(0x00FFFFFF);												// Adjust this period to change distance polling frequency.
 	UARTprintf("TIMER2 configured\n");
 	UARTprintf("----------\n");
 	
-	//GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
+	GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
 		
 	while (1)																						// Lowest priority is the dc motor commutation loop. Interrupted by any other communications.
 	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
+		if (strcmp(CMD_BUFFER, "") != 0)
+		{
+			if (strstr(CMD_BUFFER, "ACC|"))
+			{
+				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+				GPIO_PORTF_DATA_R |= GPIO_PIN_1;
+				CMD = 1;
+			}
+			else if (strstr(CMD_BUFFER, "DEC|"))
+			{
+				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+				GPIO_PORTF_DATA_R |= GPIO_PIN_2;
+				CMD = 2;
+			}
+			else if (strstr(CMD_BUFFER, "LFT|"))
+			{
+				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+				GPIO_PORTF_DATA_R |= GPIO_PIN_3;
+				CMD = 3;
+			}
+			else if (strstr(CMD_BUFFER, "RGT|"))
+			{
+				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+				GPIO_PORTF_DATA_R |= GPIO_PIN_1 | GPIO_PIN_2;
+				CMD = 4;
+			}
+			else if (strstr(CMD_BUFFER, "ATO|"))
+			{
+				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+				GPIO_PORTF_DATA_R |= GPIO_PIN_2 | GPIO_PIN_3;
+				CMD = 5;
+			}
+			else
+			{
+				CMD = 0;
+			}
+			strcpy(CMD_BUFFER, "");
+		}
+		
 		if (DELAY > 0x0000FFFF)
 		{
-			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1;
+			//GPIO_PORTF_DATA_R &= ~GPIO_PIN_1;
 			STATE = (GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1;
 			switch (STATE)
 			{
@@ -224,7 +267,7 @@ int main()
 		}
 		else
 		{
-			GPIO_PORTF_DATA_R |= GPIO_PIN_1;
+			//GPIO_PORTF_DATA_R |= GPIO_PIN_1;
 		}
 	}
 }
