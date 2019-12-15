@@ -41,7 +41,7 @@ void LCD_init(void);
 void LCD_clear(void);
 void LCD_go_to(uint8_t page, uint8_t offset);
 void LCD_write_char(char character);
-void LCD_write(char stirng[]);
+void LCDprintf(char stirng[]);
 
 void Configure_SSI0(void);
 void Configure_PORTB(void);
@@ -112,6 +112,8 @@ void LCD_init()
 	command(volumeRegSet);
 	command(displayOn);
 	
+	LCD_go_to(2, 0);
+	LCDprintf("AYY");
 	return;
 }
 
@@ -557,7 +559,7 @@ void LCD_write_char(char character)
 	return;
 }
 
-void LCD_write(char string[])
+void LCDprintf(char string[])
 {
 	for (uint8_t i = 0; i < strlen(string); i++)
 	{

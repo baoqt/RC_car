@@ -13,6 +13,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "driverlib/i2c.h"
+#include "driverlib/pwm.h"
 
 #include "utils/uartstdio.h"
 #include "LCD.h"
@@ -115,6 +116,31 @@ void BLDC_init()
 	GPIO_PORTD_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7;
 }
 
+void Servo_init()
+{
+	volatile unsigned long delay;
+	
+	SYSCTL_RCGC0_R |= SYSCTL_RCGC0_PWM0;
+	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOB;
+	delay = SYSCTL_RCGC2_R;
+	
+	SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
+	
+	GPIO_PORTB_LOCK_R = 0x4C4F4e4B;
+	GPIO_PORTB_CR_R = 0xFF;
+
+	GPIO_PORTB_AMSEL_R &= ~GPIO_PIN_6;
+	GPIO_PORTB_DEN_R |= GPIO_PIN_6;
+	GPIO_PORTB_PCTL_R |= GPIO_PCTL_PB6_M0PWM0;
+	GPIO_PORTB_AFSEL_R |= GPIO_PIN_6;
+	
+	PWM0_0_CTL_R &= ~PWM_0_CTL_ENABLE;
+	PWM0_0_GENA_R |= PWM_0_GENA_ACTCMPAD_ZERO | PWM_0_GENA_ACTLOAD_ONE;
+	PWM0_0_LOAD_R = 0x000003FF;
+	PWM0_0_CMPA_R = 0x000001FF;
+	PWM0_0_CTL_R |= PWM_0_CTL_ENABLE;
+}
+
 void Configure_TIMER2(unsigned long period)
 {
 	volatile unsigned long delay;
@@ -166,108 +192,72 @@ int main()
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
 	UARTprintf("LCD initialized\n");
-	BLDC_init();
-	UARTprintf("BLDC initialized\n");
+	//BLDC_init();
+	//UARTprintf("BLDC initialized\n");
+	Servo_init();
+	UARTprintf("Servo motor intialized\n");
 	BLE_init(CMD_BUFFER, LENGTH);
 	UARTprintf("BLE initialized\n");
 	Configure_TIMER2(0x00FFFFFF);												// Adjust this period to change distance polling frequency.
 	UARTprintf("TIMER2 configured\n");
 	UARTprintf("----------\n");
 	
-	GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
+	//GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;				// Turn dc motor to a known position (0-4)
 		
 	while (1)																						// Lowest priority is the dc motor commutation loop. Interrupted by any other communications.
-	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs
-		if (strcmp(CMD_BUFFER, "") != 0)
-		{
-			if (strstr(CMD_BUFFER, "ACC|"))
-			{
-				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
-				GPIO_PORTF_DATA_R |= GPIO_PIN_1;
-				CMD = 1;
-			}
-			else if (strstr(CMD_BUFFER, "DEC|"))
-			{
-				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
-				GPIO_PORTF_DATA_R |= GPIO_PIN_2;
-				CMD = 2;
-			}
-			else if (strstr(CMD_BUFFER, "LFT|"))
-			{
-				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
-				GPIO_PORTF_DATA_R |= GPIO_PIN_3;
-				CMD = 3;
-			}
-			else if (strstr(CMD_BUFFER, "RGT|"))
-			{
-				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
-				GPIO_PORTF_DATA_R |= GPIO_PIN_1 | GPIO_PIN_2;
-				CMD = 4;
-			}
-			else if (strstr(CMD_BUFFER, "ATO|"))
-			{
-				GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
-				GPIO_PORTF_DATA_R |= GPIO_PIN_2 | GPIO_PIN_3;
-				CMD = 5;
-			}
-			else
-			{
-				CMD = 0;
-			}
-			strcpy(CMD_BUFFER, "");
-		}
-		
+	{																										// Placeholder pin names for hall effect sensor input and motor driver outputs	
 		if (DELAY > 0x0000FFFF)
 		{
-			//GPIO_PORTF_DATA_R &= ~GPIO_PIN_1;
-			STATE = (GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1;
-			switch (STATE)
-			{
-				case 1:																					// 6 step commutation cycle
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_2 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;	// (1-3)
-					break;
-				}
-				case 3:
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_2 | GPIO_PIN_3;	// (2-3)
-					break;
-				}
-				case 2:
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_3 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_2 | GPIO_PIN_6;	// (2-6)
-					break;
-				}
-				case 6:
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_7;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_0 | GPIO_PIN_6;	// (0-6)
-					break;
-				}
-				case 4:
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_0 | GPIO_PIN_7;	// (0-7)
-					break;
-				}
-				case 5:
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6;
-					GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_7;	// (1-7)
-					break;
-				}
-				default:																				// Unknown state, turn off all outputs
-				{
-					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
-				}
-			}
+			PWM0_ENABLE_R |= PWM_ENABLE_PWM0EN;
+//			//GPIO_PORTF_DATA_R &= ~GPIO_PIN_1;
+//			STATE = (GPIO_PORTE_DATA_R & (GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3)) >> 1;
+//			switch (STATE)
+//			{
+//				case 1:																					// 6 step commutation cycle
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_2 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
+//					GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_3;	// (1-3)
+//					break;
+//				}
+//				case 3:
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
+//					GPIO_PORTD_DATA_R |= GPIO_PIN_2 | GPIO_PIN_3;	// (2-3)
+//					break;
+//				}
+//				case 2:
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_3 & ~GPIO_PIN_7;
+//					GPIO_PORTD_DATA_R |= GPIO_PIN_2 | GPIO_PIN_6;	// (2-6)
+//					break;
+//				}
+//				case 6:
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_7;
+//					GPIO_PORTD_DATA_R |= GPIO_PIN_0 | GPIO_PIN_6;	// (0-6)
+//					break;
+//				}
+//				case 4:
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6;
+//					GPIO_PORTD_DATA_R |= GPIO_PIN_0 | GPIO_PIN_7;	// (0-7)
+//					break;
+//				}
+//				case 5:
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6;
+//					GPIO_PORTD_DATA_R |= GPIO_PIN_1 | GPIO_PIN_7;	// (1-7)
+//					break;
+//				}
+//				default:																				// Unknown state, turn off all outputs
+//				{
+//					GPIO_PORTD_DATA_R &= ~GPIO_PIN_0 & ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3 & ~GPIO_PIN_6 & ~GPIO_PIN_7;
+//				}
+//			}
 		}
 		else
 		{
-			//GPIO_PORTF_DATA_R |= GPIO_PIN_1;
+			PWM0_ENABLE_R &= ~PWM_ENABLE_PWM0EN;
 		}
 	}
 }
@@ -295,6 +285,46 @@ void GPIOF_Handler(void)
 void TIMER2A_Handler(void)
 {
 	DELAY = HCSR04_Get_Distance();
+	
+	if (strcmp(CMD_BUFFER, "") != 0)
+	{
+		if (strstr(CMD_BUFFER, "ACC|"))
+		{
+			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+			GPIO_PORTF_DATA_R |= GPIO_PIN_1;
+			CMD = 1;
+		}
+		else if (strstr(CMD_BUFFER, "DEC|"))
+		{
+			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+			GPIO_PORTF_DATA_R |= GPIO_PIN_2;
+			CMD = 2;
+		}
+		else if (strstr(CMD_BUFFER, "LFT|"))
+		{
+			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+			GPIO_PORTF_DATA_R |= GPIO_PIN_3;
+			CMD = 3;
+		}
+		else if (strstr(CMD_BUFFER, "RGT|"))
+		{
+			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+			GPIO_PORTF_DATA_R |= GPIO_PIN_1 | GPIO_PIN_2;
+			CMD = 4;
+		}
+		else if (strstr(CMD_BUFFER, "ATO|"))
+		{
+			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
+			GPIO_PORTF_DATA_R |= GPIO_PIN_2 | GPIO_PIN_3;
+			CMD = 5;
+		}
+		else
+		{
+			CMD = 0;
+		}
+		strcpy(CMD_BUFFER, "");
+	}
+	
 //	UARTprintf("Delay: %04X.%04X\n", ((0xFFFF0000 & DELAY) >> 16), (0x0000FFFF & DELAY));
 //	UARTprintf("State: %d\n", STATE);
 //	UARTprintf("Upper: %d\n", (GPIO_PORTD_DATA_R & (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2)));
