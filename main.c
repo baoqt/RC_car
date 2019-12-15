@@ -1,3 +1,22 @@
+////////////////////////////////////////////////////////////
+//	Main file for the BLE controlled RC car project.
+// 
+//	Contains function calls to initialization and configuration
+//	to the specific hardware modules from the included header
+//	files.
+//
+//	Main loops checks the periodically fetched measurement
+//	from the distance sensor and disables the PWM driving the
+//	main servo motor.
+//
+//	Uses TIMER2 to periodically get the distance measurement
+//	as well as pop off any BLE received commands from the command
+//	stack.
+//
+//	BLDC commutation loop is working on the TIVA side, but
+//	driver board is unresponsive. Hall effect sensor inputs
+//	and gate high and low outputs follow expected waveforms.
+////////////////////////////////////////////////////////////
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -28,6 +47,15 @@ uint8_t STATE = 0;
 uint8_t CMD = 0;
 char CMD_BUFFER[LENGTH];
 
+////////////////////////////////////////////////////////////
+//	Configures the UART0 module, used to send debugging messages
+//	through the TIVA's evaluation board USB cable onto a serial
+//	COM port.
+//
+//	Uses the following pins of PORTA:
+//	PORTA0		-		UART0 RX
+//	PORTA1		-		UART0 TX
+////////////////////////////////////////////////////////////
 void ConfigureUART0(void)
 {
 	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_UART0;								// Enable UART0 module.
@@ -42,6 +70,16 @@ void ConfigureUART0(void)
   UARTStdioConfig(0, 115200, 16000000);								// Initialize the UART for console I/O.
 }
 
+////////////////////////////////////////////////////////////
+//	Configures the TIVA's onboard push buttons; PB0 and PB1.
+//
+//	Uses the following pins of PORTF:
+//	PORTF0		-		PB0
+//	PORTF4		-		PB1
+//
+//	Uses internal pull up resistors so a logic high corresponds
+//	with 0V and a logic low corresponds with 3V3.
+////////////////////////////////////////////////////////////
 void ConfigurePORTFPushButtons()
 {
 	volatile unsigned long delay;
@@ -60,6 +98,10 @@ void ConfigurePORTFPushButtons()
 	GPIO_PORTF_DEN_R |= GPIO_PIN_0 | GPIO_PIN_4;				// Enable digital I/O on PORTF
 }
 
+////////////////////////////////////////////////////////////
+//	Configures interrupts that trigger on a negative edge
+//	on the two previously mentioned buttons.
+////////////////////////////////////////////////////////////
 void ConfigurePORTFInterrupts()
 {
 	GPIO_PORTF_IM_R &= ~GPIO_PIN_0 & ~GPIO_PIN_4;				// Disable interrupts on PORTF0 and PORTF4
@@ -72,6 +114,14 @@ void ConfigurePORTFInterrupts()
 	GPIO_PORTF_IM_R |= 0x11;														// Enable interrupts on PORTF0 and PORTF4
 }
 
+////////////////////////////////////////////////////////////
+//	Configures the TIVA's onboard RGB LED.
+//
+//	Uses the following pins of PORTF:
+//	PORTF1		-		RED
+//	PORTF2		-		BLUE
+//	PORTF3		-		GREEN
+////////////////////////////////////////////////////////////
 void ConfigurePORTFLEDs()
 {
 	volatile unsigned long delay;
@@ -96,6 +146,21 @@ void ConfigurePORTFLEDs()
 	GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 }
 
+////////////////////////////////////////////////////////////
+//	Configures the necessary pins for a simple BLDC motor driver.
+//
+//	Uses the following pins of PORTD:
+//	PORTD0		-		Gate A high
+//	PORTD1		-		Gate B high
+//	PORTD2		-		Gate C high
+//	PORTD3		-		Gate A low
+//	PORTD6		-		Gate B low
+//	PORTD7		-		Gate C low
+//
+//	Uses the following pins of PORTE:
+//	PORTE1		-		Hall effect sensor A
+//	PORTE2		-		Hall effect sensor B
+//	PORTE3		-		Hall effect sensor C
 void BLDC_init()
 {
 	SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOE;
@@ -116,6 +181,15 @@ void BLDC_init()
 	GPIO_PORTD_DEN_R |= GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7;
 }
 
+////////////////////////////////////////////////////////////
+//	Configures the necessary pins and modules for a continuous
+//	rotation servo control.
+//
+//	Uses the PWM0 module
+//
+//	Uses the following pins of PORTB:
+//	PORTB6		-		PWM0_0 output
+////////////////////////////////////////////////////////////
 void Servo_init()
 {
 	volatile unsigned long delay;
@@ -137,10 +211,15 @@ void Servo_init()
 	PWM0_0_CTL_R &= ~PWM_0_CTL_ENABLE;
 	PWM0_0_GENA_R |= PWM_0_GENA_ACTCMPAD_ZERO | PWM_0_GENA_ACTLOAD_ONE;
 	PWM0_0_LOAD_R = 0x000003FF;
-	PWM0_0_CMPA_R = 0x000001FF;
+	PWM0_0_CMPA_R = 0x00000003;
 	PWM0_0_CTL_R |= PWM_0_CTL_ENABLE;
 }
 
+////////////////////////////////////////////////////////////
+//	Configures TIMER2 to periodically get a distance measurement
+//	from the ultrasonic distance sensor as well as pop off a
+//	BLE transmitted motor control command if any exists.
+////////////////////////////////////////////////////////////
 void Configure_TIMER2(unsigned long period)
 {
 	volatile unsigned long delay;
@@ -292,12 +371,16 @@ void TIMER2A_Handler(void)
 		{
 			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 			GPIO_PORTF_DATA_R |= GPIO_PIN_1;
+			
+			PWM0_0_CMPA_R = ((PWM0_0_CMPA_R << 1) < PWM0_0_LOAD_R) ? PWM0_0_CMPA_R << 1 : PWM0_0_CMPA_R;
 			CMD = 1;
 		}
 		else if (strstr(CMD_BUFFER, "DEC|"))
 		{
 			GPIO_PORTF_DATA_R &= ~GPIO_PIN_1 & ~GPIO_PIN_2 & ~GPIO_PIN_3;
 			GPIO_PORTF_DATA_R |= GPIO_PIN_2;
+			
+			PWM0_0_CMPA_R = ((PWM0_0_CMPA_R >> 1) > 0) ? PWM0_0_CMPA_R >> 1 : PWM0_0_CMPA_R;
 			CMD = 2;
 		}
 		else if (strstr(CMD_BUFFER, "LFT|"))

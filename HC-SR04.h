@@ -1,10 +1,11 @@
-// Header file for HC-SR04 ultrasonic distance sensor module
+////////////////////////////////////////////////////////////
+//	Header file for HC-SR04 ultrasonic distance sensor module
 //
-// Uses the following pins of PORTA:
-// PORTA6		-		TRIG
-// PORTA7 	- 	ECHO
+//	Uses the following pins of PORTA:
+//	PORTA6		-		TRIG
+//	PORTA7		- 	ECHO
 //
-// Uses TIMER3 to get measurement value
+//	Uses TIMER3 to get measurement value
 ////////////////////////////////////////////////////////////
 
 #include <stdint.h>
@@ -27,6 +28,11 @@ void Configure_PORTA(void);
 void Configure_TIMER2(unsigned long period);
 void Configure_TIMER3(void);
 
+////////////////////////////////////////////////////////////
+//	Configures PORTA6 (TRIG) and PORTA7 (ECHO) as GPIO for
+//	distance measurement initiation and measurement completion
+//	detection.
+////////////////////////////////////////////////////////////
 void Configure_PORTA()
 {
 	volatile unsigned long delay;
@@ -46,6 +52,13 @@ void Configure_PORTA()
 	
 }
 
+////////////////////////////////////////////////////////////
+//	Configures TIMER3 for use with distance sensor.
+//
+//	Counts the delay between TRIG negative edge and ECHO
+//	negative edge. This value is used as the time delay of
+//	the ultrasonic pulse's echo.
+////////////////////////////////////////////////////////////
 void Configure_TIMER3()
 {
 	volatile unsigned long delay;

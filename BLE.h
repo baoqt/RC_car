@@ -1,11 +1,12 @@
-// Header file for RN4871 BLE module
+////////////////////////////////////////////////////////////
+//	Header file for RN4871 BLE module
 //
-// Uses the following pins of PORTB:
-// PORTB0		-		UART1 RX
-// PORTB1 	- 	UART1 TX
+//	Uses the following pins of PORTB:
+//	PORTB0		-		UART1 RX
+//	PORTB1		- 	UART1 TX
 //
-// Uses TIMER0 to timeout on getting UART1 RX
-// Uses TIMER1 to periodically forward UART1 to UART0 for debugging
+//	Uses TIMER0 to timeout on getting UART1 RX
+//	Uses TIMER1 to periodically forward UART1 to UART0 for debugging
 ////////////////////////////////////////////////////////////
 
 #include <stdint.h>
@@ -102,14 +103,16 @@ void Timer1_Init(unsigned long period)
 	TIMER1_CTL_R |= TIMER_CTL_TAEN;
 }
 ////////////////////////////////////////////////////////////
+//	Configures the necessary modules for communication with
+//	and through the RN4871 BLE module.
 //
-// const char* buffer		-		Motor command buffer.
-//											-		To be used by main motor loop.
+//	Configures the BLE service profile to allow transparent
+//	UART with the connected device.
 //
-// uint8_t wordLength		-		Size of a word in buffer.
+//	const char* buffer		-		Motor command stack.
+//												-		To be used by main motor loop.
 //
-// uint8_t numWords			-		Number of words in buffer.
-//
+//	uint8_t length				-		Size of a word in buffer.
 ////////////////////////////////////////////////////////////
 void BLE_init(char* buffer, uint8_t length)
 {
@@ -145,6 +148,11 @@ void BLE_init(char* buffer, uint8_t length)
 	UARTprintf("----------\n");
 }
 
+////////////////////////////////////////////////////////////
+//	Sends a command to the Bluetooth module.
+//
+//	const char* pCommand		-		Command string
+////////////////////////////////////////////////////////////
 void BLE_command(const char* pCommand)
 {
 	
@@ -152,7 +160,7 @@ void BLE_command(const char* pCommand)
 	{
 		UART1_DR_R = pCommand[i];
 	}
-	
+																											// The string $$$ indicates a switch to command mode.
 	if (strcmp(pCommand, "$$$") != 0)										// If regular data:
 	{
 		UART1_DR_R = '\r';																// Append with <CR>.
@@ -160,7 +168,20 @@ void BLE_command(const char* pCommand)
 	
 	UARTprintf("%s\n< ", pCommand);											// UART0 debugging message.
 }
-
+////////////////////////////////////////////////////////////
+//	Flushes out any remaining characters in the UART1 FIFO RX
+//	stack into:
+//		-		A char buffer to be forwarded to UART0 for debugging
+//				purposes.
+//		-		The command stack used by the main loop for motor
+//				control.
+//	Formatting is done for both purposes to look better printed
+//	on the terminal or to delimit commands.
+//
+//	This function is used either periodically to catch any
+//	straggling characters not caught by the FIFO interrupt
+//	during downtime, or when expecting a response to a command.
+////////////////////////////////////////////////////////////
 void BLE_RX_flush(void)
 {
 	while (!(UART1_FR_R & UART_FR_RXFE))								// Flush out any remaining characters in UART buffer into burst buffer
@@ -207,6 +228,9 @@ void BLE_RX_flush(void)
 		}
 }
 
+////////////////////////////////////////////////////////////
+//	Forwards UART1 RX -> UART0 TX for debugging messages.
+////////////////////////////////////////////////////////////
 void BLE_RX_forward(void)
 {
 	if (strcmp(TXbuffer, "") != 0)											// If burst buffer is not empty
@@ -216,6 +240,25 @@ void BLE_RX_forward(void)
 	}
 }
 
+////////////////////////////////////////////////////////////
+//	Waits for an RX.
+//
+//	Typically used after sending a command to get the ACK
+//	before moving onto another.
+//
+//	Uses TIMER0 for timeout. If the timer is triggered, the
+//	absence of an ACK is returned and execution continues.
+//
+//	During this function, periodic flush and forward interrupts
+//	are disabled as well as RX FIFO interrupts. The buffer is
+//	continuously being flushed so those two will interfere if
+//	left enabled.
+//
+//	Does not detect actual NACK responses.
+//
+//	Returns 0 if the command not given an ACK or a 1 if ACK
+//	received.
+////////////////////////////////////////////////////////////
 int BLE_wait_for_RX(void)															// Wait on an RX with a timeout.
 {
 	TIMER1_IMR_R &= ~TIMER_IMR_TATOIM;									// Disable periodic flush and forward interrupt.
@@ -256,6 +299,9 @@ int BLE_wait_for_RX(void)															// Wait on an RX with a timeout.
 	return 1;																						// Successful RX.
 }
 
+////////////////////////////////////////////////////////////
+//	Timeout for the RX wait function.
+////////////////////////////////////////////////////////////
 void TIMER0A_Handler(void)
 {
 	TIMER0_ICR_R |= TIMER_ICR_TATOCINT;									// Set acknowlegement flag for TIMER0.
@@ -263,6 +309,10 @@ void TIMER0A_Handler(void)
 	TIMEOUT_COUNTER = 1;																// Timeout triggered.
 }
 
+////////////////////////////////////////////////////////////
+//	Periodically flushes the UART1 RX FIFO of any straggling
+//	characters and forwards UART1 RX -> UART0 TX for debugging.
+////////////////////////////////////////////////////////////
 void TIMER1A_Handler(void)
 {
 	TIMER1_ICR_R |= TIMER_ICR_TATOCINT;
@@ -282,6 +332,11 @@ void TIMER1A_Handler(void)
 //	}
 }
 
+////////////////////////////////////////////////////////////
+//	UART1 RX FIFO interrupt.
+//
+//	Flushes the buffer when it's half full.
+////////////////////////////////////////////////////////////
 void UART1_Handler(void)
 {
 	if (UART1_MIS_R & UART_MIS_RXMIS)										// RX interrupt.
