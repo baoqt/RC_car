@@ -45,7 +45,7 @@ void ConfigureI2C0(void)
 void VL53L0X_init(void)
 {
 	ConfigureI2C0();
-	Test_I2C0_Connection();
+	//Test_I2C0_Connection();
 }
 
 void Test_I2C0_Connection(void)

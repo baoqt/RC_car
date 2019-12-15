@@ -135,6 +135,10 @@ void BLE_init(char* buffer, uint8_t length)
 	config &= BLE_wait_for_RX();
 	BLE_command("SS,C0");
 	config &= BLE_wait_for_RX();
+	BLE_command("SC,0");
+	config &= BLE_wait_for_RX();
+	BLE_command("D");
+	config &= BLE_wait_for_RX();
 	BLE_command("---");
 	config &= BLE_wait_for_RX();
 	if (config)
@@ -250,9 +254,8 @@ void BLE_RX_forward(void)
 //	absence of an ACK is returned and execution continues.
 //
 //	During this function, periodic flush and forward interrupts
-//	are disabled as well as RX FIFO interrupts. The buffer is
-//	continuously being flushed so those two will interfere if
-//	left enabled.
+//	are disabled. The buffer is continuously being flushed so
+//	it will interfere if left enabled.
 //
 //	Does not detect actual NACK responses.
 //
@@ -262,7 +265,6 @@ void BLE_RX_forward(void)
 int BLE_wait_for_RX(void)															// Wait on an RX with a timeout.
 {
 	TIMER1_IMR_R &= ~TIMER_IMR_TATOIM;									// Disable periodic flush and forward interrupt.
-	UART1_IM_R &= ~UART_IM_RXIM;												// Disable RX FIFO interrupt.
 	TIMEOUT_COUNTER = 0;
 	TIMER0_CTL_R |= TIMER_CTL_TAEN;											// Start timeout counter.
 	
@@ -293,7 +295,6 @@ int BLE_wait_for_RX(void)															// Wait on an RX with a timeout.
 	TIMER0_TAV_R = TIMER0_TAILR_R;
 	
 	BLE_RX_forward();																		// Forward UART1 -> UART0.
-	UART1_IM_R |= UART_IM_RXIM;													// Reenable RX FIFO interrupt.
 	TIMER1_IMR_R |= TIMER_IMR_TATOIM;										// Reenable periodic flush and forward interrupt.
 	
 	return 1;																						// Successful RX.

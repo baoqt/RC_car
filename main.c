@@ -211,7 +211,7 @@ void Servo_init()
 	PWM0_0_CTL_R &= ~PWM_0_CTL_ENABLE;
 	PWM0_0_GENA_R |= PWM_0_GENA_ACTCMPAD_ZERO | PWM_0_GENA_ACTLOAD_ONE;
 	PWM0_0_LOAD_R = 0x000003FF;
-	PWM0_0_CMPA_R = 0x00000003;
+	PWM0_0_CMPA_R = 0x0000000E;
 	PWM0_0_CTL_R |= PWM_0_CTL_ENABLE;
 }
 
@@ -259,6 +259,8 @@ int main()
 	ConfigureUART0();
 	UARTprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	UARTprintf("----------\nUART0 configured\n");
+	BLE_init(CMD_BUFFER, LENGTH);
+	UARTprintf("BLE initialized\n");
 	VL53L0X_init();
 	UARTprintf("VL53L0X initialized\n");
 	HCSR04_init();
@@ -271,12 +273,10 @@ int main()
 	UARTprintf("Tiva LEDs configured\n");
 	LCD_init();
 	UARTprintf("LCD initialized\n");
-	//BLDC_init();
-	//UARTprintf("BLDC initialized\n");
+	BLDC_init();
+	UARTprintf("BLDC initialized\n");
 	Servo_init();
 	UARTprintf("Servo motor intialized\n");
-	BLE_init(CMD_BUFFER, LENGTH);
-	UARTprintf("BLE initialized\n");
 	Configure_TIMER2(0x00FFFFFF);												// Adjust this period to change distance polling frequency.
 	UARTprintf("TIMER2 configured\n");
 	UARTprintf("----------\n");
@@ -345,20 +345,16 @@ void GPIOF_Handler(void)
 {
 	GPIO_PORTF_ICR_R |= 0x11;
 	
-//	if (!(GPIO_PORTF_DATA_R & GPIO_PIN_4) && (DEBOUNCE_FLAG == 0))
-//	{
-//		BLE_command("$$$");
-//		DEBOUNCE_FLAG = 1;
-//		GPIO_PORTF_IM_R &= ~0x11;
-//		TIMER0_CTL_R |= TIMER_CTL_TAEN;
-//	}
-//	else if (!(GPIO_PORTF_DATA_R & GPIO_PIN_0) && (DEBOUNCE_FLAG == 0))
-//	{
-//		BLE_command("SS,C0");
-//		DEBOUNCE_FLAG = 1;
-//		GPIO_PORTF_IM_R &= ~0x11;
-//		TIMER0_CTL_R |= TIMER_CTL_TAEN;
-//	}
+	if (!(GPIO_PORTF_DATA_R & GPIO_PIN_4))
+	{
+		BLE_command("$$$");
+		//BLE_wait_for_RX();
+	}
+	else if (!(GPIO_PORTF_DATA_R & GPIO_PIN_0))
+	{
+		BLE_command("B");
+		//BLE_wait_for_RX();
+	}
 }
 
 void TIMER2A_Handler(void)

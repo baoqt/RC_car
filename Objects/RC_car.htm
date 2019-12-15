@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\RC_car.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\RC_car.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sat Dec 14 20:15:05 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sun Dec 15 11:28:20 2019
 <BR><P>
 <H3>Maximum Stack Usage =        136 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1262,6 +1262,10 @@ Global Symbols
 
 <P><STRONG><a name="[e7]"></a>__semihosting_library_function</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, indicate_semi.o(.text), UNUSED)
 
+<P><STRONG><a name="[bc]"></a>BLDC_init</STRONG> (Thumb, 170 bytes, Stack size 0 bytes, main.o(i.BLDC_init))
+<BR><BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+</UL>
+
 <P><STRONG><a name="[91]"></a>BLE_RX_flush</STRONG> (Thumb, 266 bytes, Stack size 16 bytes, main.o(i.BLE_RX_flush))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = BLE_RX_flush &rArr; strlen
 </UL>
@@ -1290,10 +1294,11 @@ Global Symbols
 <LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
 <LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 </UL>
-<BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_init
+<BR>[Called By]<UL><LI><a href="#[2a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIOF_Handler
+<LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_init
 </UL>
 
-<P><STRONG><a name="[98]"></a>BLE_init</STRONG> (Thumb, 138 bytes, Stack size 16 bytes, main.o(i.BLE_init))
+<P><STRONG><a name="[98]"></a>BLE_init</STRONG> (Thumb, 162 bytes, Stack size 16 bytes, main.o(i.BLE_init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = BLE_init &rArr; BLE_wait_for_RX &rArr; BLE_RX_forward &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
 </UL>
 <BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTprintf
@@ -1306,7 +1311,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[9c]"></a>BLE_wait_for_RX</STRONG> (Thumb, 182 bytes, Stack size 8 bytes, main.o(i.BLE_wait_for_RX))
+<P><STRONG><a name="[9c]"></a>BLE_wait_for_RX</STRONG> (Thumb, 158 bytes, Stack size 8 bytes, main.o(i.BLE_wait_for_RX))
 <BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = BLE_wait_for_RX &rArr; BLE_RX_forward &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
 </UL>
 <BR>[Calls]<UL><LI><a href="#[8e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysCtlDelay
@@ -1316,23 +1321,23 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_init
 </UL>
 
-<P><STRONG><a name="[b8]"></a>ConfigureI2C0</STRONG> (Thumb, 118 bytes, Stack size 8 bytes, main.o(i.ConfigureI2C0))
+<P><STRONG><a name="[b7]"></a>ConfigureI2C0</STRONG> (Thumb, 118 bytes, Stack size 8 bytes, main.o(i.ConfigureI2C0))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = ConfigureI2C0
 </UL>
-<BR>[Called By]<UL><LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VL53L0X_init
+<BR>[Called By]<UL><LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VL53L0X_init
 </UL>
 
-<P><STRONG><a name="[bb]"></a>ConfigurePORTFInterrupts</STRONG> (Thumb, 102 bytes, Stack size 0 bytes, main.o(i.ConfigurePORTFInterrupts))
+<P><STRONG><a name="[ba]"></a>ConfigurePORTFInterrupts</STRONG> (Thumb, 102 bytes, Stack size 0 bytes, main.o(i.ConfigurePORTFInterrupts))
 <BR><BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[bc]"></a>ConfigurePORTFLEDs</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, main.o(i.ConfigurePORTFLEDs))
+<P><STRONG><a name="[bb]"></a>ConfigurePORTFLEDs</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, main.o(i.ConfigurePORTFLEDs))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = ConfigurePORTFLEDs
 </UL>
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[ba]"></a>ConfigurePORTFPushButtons</STRONG> (Thumb, 114 bytes, Stack size 8 bytes, main.o(i.ConfigurePORTFPushButtons))
+<P><STRONG><a name="[b9]"></a>ConfigurePORTFPushButtons</STRONG> (Thumb, 114 bytes, Stack size 8 bytes, main.o(i.ConfigurePORTFPushButtons))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = ConfigurePORTFPushButtons
 </UL>
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -1385,7 +1390,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HCSR04_init
 </UL>
 
-<P><STRONG><a name="[b9]"></a>FPULazyStackingEnable</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, fpu.o(i.FPULazyStackingEnable))
+<P><STRONG><a name="[b8]"></a>FPULazyStackingEnable</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, fpu.o(i.FPULazyStackingEnable))
 <BR><BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
@@ -1393,7 +1398,11 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[9f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIOPinTypeUART
 </UL>
 
-<P><STRONG><a name="[2a]"></a>GPIOF_Handler</STRONG> (Thumb, 14 bytes, Stack size 0 bytes, main.o(i.GPIOF_Handler))
+<P><STRONG><a name="[2a]"></a>GPIOF_Handler</STRONG> (Thumb, 54 bytes, Stack size 8 bytes, main.o(i.GPIOF_Handler))
+<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = GPIOF_Handler &rArr; BLE_command &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
+</UL>
+<BR>[Calls]<UL><LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_command
+</UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_tm4c123.o(RESET)
 </UL>
 <P><STRONG><a name="[a3]"></a>GPIOPadConfigSet</STRONG> (Thumb, 312 bytes, Stack size 24 bytes, gpio.o(i.GPIOPadConfigSet))
@@ -1512,14 +1521,6 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_tm4c123.o(RESET)
 </UL>
-<P><STRONG><a name="[b4]"></a>Test_I2C0_Connection</STRONG> (Thumb, 236 bytes, Stack size 8 bytes, main.o(i.Test_I2C0_Connection))
-<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = Test_I2C0_Connection &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
-</UL>
-<BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTprintf
-</UL>
-<BR>[Called By]<UL><LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VL53L0X_init
-</UL>
-
 <P><STRONG><a name="[9a]"></a>Timer0_Init</STRONG> (Thumb, 108 bytes, Stack size 8 bytes, main.o(i.Timer0_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = Timer0_Init
 </UL>
@@ -1552,34 +1553,32 @@ Global Symbols
 <P><STRONG><a name="[96]"></a>UARTprintf</STRONG> (Thumb, 26 bytes, Stack size 24 bytes, uartstdio.o(i.UARTprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 104<LI>Call Chain = UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTvprintf
+<BR>[Calls]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTvprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Test_I2C0_Connection
 <LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_init
 <LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_command
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_RX_forward
 </UL>
 
-<P><STRONG><a name="[b5]"></a>UARTvprintf</STRONG> (Thumb, 574 bytes, Stack size 64 bytes, uartstdio.o(i.UARTvprintf))
+<P><STRONG><a name="[b4]"></a>UARTvprintf</STRONG> (Thumb, 574 bytes, Stack size 64 bytes, uartstdio.o(i.UARTvprintf))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = UARTvprintf &rArr; UARTwrite
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTwrite
+<BR>[Calls]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTwrite
 </UL>
 <BR>[Called By]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTprintf
 </UL>
 
-<P><STRONG><a name="[b6]"></a>UARTwrite</STRONG> (Thumb, 58 bytes, Stack size 16 bytes, uartstdio.o(i.UARTwrite))
+<P><STRONG><a name="[b5]"></a>UARTwrite</STRONG> (Thumb, 58 bytes, Stack size 16 bytes, uartstdio.o(i.UARTwrite))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = UARTwrite
 </UL>
-<BR>[Called By]<UL><LI><a href="#[b5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTvprintf
+<BR>[Called By]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTvprintf
 </UL>
 
-<P><STRONG><a name="[b7]"></a>VL53L0X_init</STRONG> (Thumb, 12 bytes, Stack size 8 bytes, main.o(i.VL53L0X_init))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = VL53L0X_init &rArr; Test_I2C0_Connection &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
+<P><STRONG><a name="[b6]"></a>VL53L0X_init</STRONG> (Thumb, 8 bytes, Stack size 4 bytes, main.o(i.VL53L0X_init))
+<BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = VL53L0X_init &rArr; ConfigureI2C0
 </UL>
-<BR>[Calls]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Test_I2C0_Connection
-<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigureI2C0
+<BR>[Calls]<UL><LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigureI2C0
 </UL>
 <BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
@@ -1593,22 +1592,23 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_write_char
 </UL>
 
-<P><STRONG><a name="[88]"></a>main</STRONG> (Thumb, 170 bytes, Stack size 0 bytes, main.o(i.main))
+<P><STRONG><a name="[88]"></a>main</STRONG> (Thumb, 180 bytes, Stack size 0 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = main &rArr; BLE_init &rArr; BLE_wait_for_RX &rArr; BLE_RX_forward &rArr; UARTprintf &rArr; UARTvprintf &rArr; UARTwrite
 </UL>
 <BR>[Calls]<UL><LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UARTprintf
 <LI><a href="#[b2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SysCtlClockSet
-<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FPULazyStackingEnable
-<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VL53L0X_init
+<LI><a href="#[b8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FPULazyStackingEnable
+<LI><a href="#[b6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;VL53L0X_init
 <LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Servo_init
 <LI><a href="#[aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LCD_init
 <LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HCSR04_init
 <LI><a href="#[bd]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Configure_TIMER2
 <LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigureUART0
-<LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigurePORTFPushButtons
-<LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigurePORTFLEDs
-<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigurePORTFInterrupts
+<LI><a href="#[b9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigurePORTFPushButtons
+<LI><a href="#[bb]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigurePORTFLEDs
+<LI><a href="#[ba]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ConfigurePORTFInterrupts
 <LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLE_init
+<LI><a href="#[bc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BLDC_init
 </UL>
 <BR>[Called By]<UL><LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_entry_main
 </UL>
