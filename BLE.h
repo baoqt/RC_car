@@ -303,12 +303,12 @@ int BLE_wait_for_RX(void)															// Wait on an RX with a timeout.
 ////////////////////////////////////////////////////////////
 //	Timeout for the RX wait function.
 ////////////////////////////////////////////////////////////
-void TIMER0A_Handler(void)
-{
-	TIMER0_ICR_R |= TIMER_ICR_TATOCINT;									// Set acknowlegement flag for TIMER0.
-	
-	TIMEOUT_COUNTER = 1;																// Timeout triggered.
-}
+//void TIMER0A_Handler(void)
+//{
+//	TIMER0_ICR_R |= TIMER_ICR_TATOCINT;									// Set acknowlegement flag for TIMER0.
+//	
+//	TIMEOUT_COUNTER = 1;																// Timeout triggered.
+//}
 
 ////////////////////////////////////////////////////////////
 //	Periodically flushes the UART1 RX FIFO of any straggling

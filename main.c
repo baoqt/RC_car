@@ -46,6 +46,7 @@ volatile unsigned long DELAY ;
 uint8_t STATE = 0;
 uint8_t CMD = 0;
 char CMD_BUFFER[LENGTH];
+bool DEBOUNCE = false;
 
 ////////////////////////////////////////////////////////////
 //	Configures the UART0 module, used to send debugging messages
@@ -259,22 +260,32 @@ int main()
 	ConfigureUART0();
 	UARTprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	UARTprintf("----------\nUART0 configured\n");
-	BLE_init(CMD_BUFFER, LENGTH);
-	UARTprintf("BLE initialized\n");
-	VL53L0X_init();
-	UARTprintf("VL53L0X initialized\n");
+	//BLE_init(CMD_BUFFER, LENGTH);
+	//UARTprintf("BLE initialized\n");
+	//VL53L0X_init();
+	//UARTprintf("VL53L0X initialized\n");
 	HCSR04_init();
 	UARTprintf("HC-SR04 initialized\n");
 	ConfigurePORTFPushButtons();
 	UARTprintf("Tiva push buttons configured\n");
 	ConfigurePORTFInterrupts();
+	SYSCTL_RCGC1_R |= SYSCTL_RCGC1_TIMER0;							// Activate TIMER0 module
+	volatile unsigned long delay = SYSCTL_RCGC1_R;															// Dummy read
+	TIMER0_CTL_R &= ~TIMER_CTL_TAEN;										// Disable TIMER0 during setup
+	TIMER0_CFG_R = 0x00000000;													// Configure for 32-bit mode
+	TIMER0_TAMR_R |= 0x00000001;												// Configure for one-shot mode
+	TIMER0_TAMR_R &= ~TIMER_TAMR_TACDIR;								// Configure for count down mode
+	TIMER0_TAILR_R = 0xEFFFFF;													// Load start value
+	NVIC_PRI4_R &= ~0xE0000000; 	 											// configure Timer0 interrupt priority as 0
+	NVIC_EN0_R |= 0x00080000;     											// enable interrupt 19 in NVIC (Timer0A)
+	TIMER0_IMR_R |= TIMER_IMR_TATOIM;										// enable time out interrupt mask
 	UARTprintf("PORTF interrupts configured\n");
 	ConfigurePORTFLEDs();
 	UARTprintf("Tiva LEDs configured\n");
-	LCD_init();
-	UARTprintf("LCD initialized\n");
-	BLDC_init();
-	UARTprintf("BLDC initialized\n");
+	//LCD_init();
+	//UARTprintf("LCD initialized\n");
+	//BLDC_init();
+	//UARTprintf("BLDC initialized\n");
 	Servo_init();
 	UARTprintf("Servo motor intialized\n");
 	Configure_TIMER2(0x00FFFFFF);												// Adjust this period to change distance polling frequency.
@@ -340,20 +351,36 @@ int main()
 		}
 	}
 }
+void TIMER0A_Handler(void)
+{
+	TIMER0_ICR_R |= TIMER_ICR_TATOCINT;									// Set acknowlegement flag for TIMER0.
+	GPIO_PORTF_IM_R |= 0x11;
+	DEBOUNCE = false;																// Timeout triggered.
+}
 
 void GPIOF_Handler(void)
 {
 	GPIO_PORTF_ICR_R |= 0x11;
 	
-	if (!(GPIO_PORTF_DATA_R & GPIO_PIN_4))
+	if (!(GPIO_PORTF_DATA_R & GPIO_PIN_4) && !DEBOUNCE)
 	{
-		BLE_command("$$$");
-		//BLE_wait_for_RX();
+		DEBOUNCE = true;
+		GPIO_PORTF_IM_R &= ~0x11;
+		UARTprintf("ACC\n");
+		strcat(CMD_BUFFER, "ACC|");
+		TIMER0_CTL_R |= TIMER_CTL_TAEN;
+//		BLE_command("$$$");
+//		//BLE_wait_for_RX();
 	}
-	else if (!(GPIO_PORTF_DATA_R & GPIO_PIN_0))
+	else if (!(GPIO_PORTF_DATA_R & GPIO_PIN_0) && !DEBOUNCE)
 	{
-		BLE_command("B");
-		//BLE_wait_for_RX();
+		DEBOUNCE = true;
+		GPIO_PORTF_IM_R &= ~0x11;
+		UARTprintf("DEC\n");
+		strcat(CMD_BUFFER, "DEC|");
+		TIMER0_CTL_R |= TIMER_CTL_TAEN;
+//		BLE_command("B");
+//		//BLE_wait_for_RX();
 	}
 }
 
